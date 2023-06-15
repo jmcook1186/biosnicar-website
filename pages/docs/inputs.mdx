@@ -490,7 +490,7 @@ The file is the precise filename in /Data/OP_data/480band/lap/ that contains the
 - `snw_alg_r025um_chla020_chlb025_cara150_carb140.nc`:  Snow Algae (Cook et al. 2017a, spherical, C nivalis)
 - `SA_Chevrollier2022_r8.99.nc`:  Snow algae (Chevrollier et al 2022) (not yet validated for release)
 - `Cook2020_glacier_algae_4_40.nc`:  Glacier Algae (Cook et al. 2020)
-- **GA_Chevrollier2022_r4.9_L18.8.nc`:  Glacier algae (Chevrollier et al 2022) (not yet validated for release)
+- `GA_Chevrollier2022_r4.9_L18.8.nc`:  Glacier algae (Chevrollier et al 2022)
   
   
 ### UNIT
@@ -503,12 +503,30 @@ Array containing the concentration in each layer in the model in units defined b
 
 ### CFACTOR
 
-The CFACTOR attribute is a multiplier that accounts for field measurments having a coarse vertical resolution but the model havign fine vertical resolution. This is mostly applicable toi glacier algae that are known to accumulate on the upper surface of the ice, but field samples generally are onyl able to remove the top approx. 2cm for cell counting. this leads to an underestimate of the concentration int he upper mm by including ~2cm of dilute clean ice below. CFACTOR accounts for this problem. It is a simple multiplier so it must be set to 1 by default.
+#### Definition
+The CFACTOR attribute is a multiplier that accounts for field measurments having a coarse vertical resolution but the model havign fine vertical resolution. This is mostly applicable to glacier algae that are known to accumulate on the upper surface of the ice, but field samples generally are onyl able to remove the top approx. 2cm for cell counting. this leads to an underestimate of the concentration int he upper mm by including ~2cm of dilute clean ice below. CFACTOR accounts for this problem. It is a simple multiplier so it must be set to 1 by default.
+
+#### Values
+
+Positive numbers
+
+#### Default
+
+`1`
 
 ### COATED
 
+#### Definition
+
 Boolean that toggles sulfate coating on or off. This is only applicable to black and brown carbon where there are files for both coated an uncoated versions. The parameter is requird because a different field in the optical property file is loaded for coated compared to uncoated impurities, so that the mass normalization takes into account the mass of both the impurity and its coating.
 
+#### Values
+
+`true` or `false`
+
+#### Default
+
+`false`
 
 ## PLOT
 
@@ -529,7 +547,7 @@ Positive float or integer.
 
 #### Default
 
-1060 or 1160 
+`1060` or `1160` 
 
 
 ### DRY_DENSITY
@@ -546,7 +564,7 @@ Positive float or integer.
 
 #### Default
 
-625 or 684 
+`625` or `684` 
 
 
 ### ABS_CFF_CALC
@@ -557,12 +575,12 @@ Boolean toggling whether abs_cff is calculated from user-defined pigment concent
 
 #### Values
 
-True or False
+`True` or `False`
 
 
 #### Default
 
-True 
+`True` 
 
 
 ### PIGMENT_CONC
@@ -575,7 +593,7 @@ Dictionary containing paths to pigment files as keys and their concentrations as
 
 The keys should remain constant, but the user can provide concentrations for each pigment as a positive integer or float.
 
-**Defaults**
+#### Defaults
 
 ```
 "Data/pigments/alloxanthin.csv": 0,
@@ -602,89 +620,88 @@ Path to the directory holding then pigment absorption data relative to the base 
 
 #### Values
 
-String
+`String`
 
 #### Default
 
-"Data/pigments/"
-: True
+`"Data/pigments/"`
 
 
 ### ABS_CFF_LOAD_RECONSTRUCTED
 
 #### Definition
 
-Boolean that toggles whether abs_cff is loaded as a reconstructed spectrum from individual pigment absorption measurements (see Chevrollier et al. 2022 for details).
+Boolean that toggles whether `abs_cff` is loaded as a reconstructed spectrum from individual pigment absorption measurements (see Chevrollier et al. 2022 for details).
 
 #### Values
 
-True or False
+`True` or `False`
 
 #### Default
 
-False
+`False`
 
 
 ### ABS_CFF_LOAD_INVIVO
 
 #### Definition
 
-Boolean toggling whether the abs_cff is loaded as an in vivo spectrum measured for whole intact cells (see Chevrollier et al. 2022 for details).
+Boolean toggling whether the `abs_cff` is loaded as an in vivo spectrum measured for whole intact cells (see Chevrollier et al. 2022 for details).
 
 #### Values
 
-True or False
+`True` or `False`
 
 #### Default
 
-True
+`True`
 
 
 ### ABS_CFF_FILE
 
 #### Definition
 
-Path to the absorption coefficient data if abs_cff is loaded from an external file (i.e. if ABS_CFF_CALC == False and one of ABS_CFF_LOAD_INVIVO or ABS_CFF_LOAD_RECONSTRUCTED == True)
+Path to the absorption coefficient data if `abs_cff` is loaded from an external file (i.e. if `ABS_CFF_CALC == False` and one of `ABS_CFF_LOAD_INVIVO` or `ABS_CFF_LOAD_RECONSTRUCTED == True`)
 
 #### Values
 
-String
+`String`
 
 **Defaults**
 
-"file.csv" (dummy file)
+`"file.csv"` (dummy file)
 
 
 ### PCKG_SA 
 
 #### Definition
 
-Boolean toggling whether the loaded snow algae abs_cff is to be corrected for the pigment packaging effect followingn Chevrollier et al. (2022).
-Only used if ABS_CFF_LOAD_RECONSTRUCTED == True.
+Boolean toggling whether the loaded snow algae `abs_cff` is to be corrected for the pigment packaging effect following Chevrollier et al. (2022).
+Only used if `ABS_CFF_LOAD_RECONSTRUCTED == True`.
 
 #### Values
 
-True or False
+`True` or `False`
 
 **Defaults**
 
-False
+`False`
 
 
 ### PCKG_GA
 
 #### Definition
 
-Boolean toggling whether the loaded glacier algae abs_cff is to be corrected for the pigment packaging effect following Chevrollier et al. (2022).
-Only used if ABS_CFF_LOAD_RECONSTRUCTED == True.
+Boolean toggling whether the loaded glacier algae `abs_cff` is to be corrected for the pigment packaging effect following Chevrollier et al. (2022).
+Only used if `ABS_CFF_LOAD_RECONSTRUCTED == True`.
 
 #### Values
 
-True or False
+`True` or `False`
 
 #### Default
 
-False
+`False`
 
 
 ### DIR_PCKG:
@@ -695,24 +712,26 @@ Path to directory containing pigment packaging correction files
 
 #### Values
 
-String
+`String`
 
 #### Default
 
-"Data/pigments/"
+`"Data/pigments/"`
 
 
 ### K_WATER_DIR 
 
 #### Definition
+
 Path to file containing imaginary part of the refractive index of water
 
 #### Values
-String
+
+`String`
 
 #### Default
 
-"Data/OP_data/k_ice_480.csv"
+`"Data/OP_data/k_ice_480.csv"`
 
 
 ### UNIT:
@@ -725,13 +744,13 @@ If the unit here is m2/mg then the pigment concentration should be expressed in 
 
 #### Values
 
-*0: m2/cell 
-*1: m2/um3
-*2: m2/mg 
+- `0`: m2/cell 
+- `1`: m2/um3
+- `2`: m2/mg 
 
 #### Default
 
-0
+`0`
 
 
 ### CELL_VOLUME 
@@ -746,7 +765,7 @@ Positive integers
 
 #### Default
 
-1500
+`1500`
 
 
 ### N_ALGAE
@@ -761,7 +780,7 @@ positive float, likely to be ~1.3 - 1.5.
 
 #### Default
 
-1.4
+`1.4`
 
 ### GO
 
@@ -771,11 +790,11 @@ Boolean toggling use of geometric optics paramaterisation (Cook et al. 2020 adap
 
 #### Values
 
-True or False
+`True` or `False`
 
 #### Default
 
-True
+`True`
 
 
 ### MIE
@@ -786,7 +805,7 @@ Boolean toggling use of Mie scattering equations to calculate single scattering 
 
 #### Values
 
-True or False
+`True` or `False`
 
 **Defaults**
 
@@ -797,7 +816,7 @@ False
 
 #### Definition
 
-Cell radius in um (sphere radius if MIE==True, circular face radius if GO==True).
+Cell radius in um (sphere radius if `MIE==True`, circular face radius if `GO==True`).
 
 #### Values
 
@@ -805,14 +824,14 @@ Positive integers
 
 #### Default
 
-10
+`10`
 
 
 ### CELL_L
 
 #### Definition
 
-Cell length in um (cylinder length if GO==True, not used if GO==False)
+Cell length in um (cylinder length if `GO==True`, not used if `GO==False`)
 
 #### Values
 
@@ -820,7 +839,7 @@ Positive integers
 
 #### Default
 
-10
+`10`
 
 
 
@@ -833,11 +852,11 @@ Toggles plotting of single scattering optical properties in interactive window.
 
 #### Values
 
-True or False
+`True` or `False`
 
 #### Default
 
-True
+`True`
 
 
 ### SAVEFIG_SSPS
@@ -848,11 +867,11 @@ Toggles saving of single scattering optical property figures to file.
 
 #### Values
 
-True or False
+`True` or `False`
 
 #### Default
 
-False
+`False`
 
 
 ### REPORT_DIMS
@@ -863,11 +882,11 @@ Toggles printing of single scattering optical property summary data to console.
 
 #### Values
 
-True or False
+`True` or `False`
 
 #### Default
 
-False
+`False`
 
 
 ### PLOT_K_ABS_CFF
@@ -878,11 +897,11 @@ Toggles plotting of refractive index data in interactive window.
 
 #### Values
 
-True or False
+`True` or `False`
 
 #### Default
 
-False
+`False`
 
 
 ### SAVE_N_K_ABS_CFF
@@ -893,11 +912,11 @@ Toggles saving of refractive index data to file.
 
 #### Values
 
-True or False
+`True` or `False`
 
 #### Default
 
-False
+`False`
 
 
 
@@ -909,11 +928,11 @@ Toggles saving of refractive index plots to file.
 
 #### Values
 
-True or False
+`True` or `False`
 
 #### Default
 
-False
+`False`
 
 
 ### SAVE_PATH_FIG
@@ -924,11 +943,11 @@ Path to directory to save figures in.
 
 #### Values
 
-String
+`String`
 
 #### Default
 
-"Data/pigments/"
+`"Data/pigments/"`
 
 
 ### SAVE_NETCDF
@@ -939,11 +958,11 @@ Toggles saving of new optical property data to netCDF format.
 
 #### Values
 
-True or False
+`True` or `False`
 
 #### Default
 
-False
+`False`
 
 
 ### SAVE_PATH_NETCDF
@@ -954,11 +973,11 @@ Path to directory to save NetCDF file in. Should be the same as the source direc
 
 #### Values
 
-String
+`String`
 
 #### Default
 
-"Data/OP_data/480band/lap/"
+`"Data/OP_data/480band/lap/"`
 
 
 ### INFO_NETCDF
@@ -969,11 +988,11 @@ Any additional information to be stored in the NetCDF file as attribute data (e.
 
 #### Values
 
-String
+`String`
 
 #### Default
 
-"info"
+`"info"`
 
 
 ### FILENAME_NETCDF
@@ -984,8 +1003,8 @@ Filename for saving the new NetCDF file to. Should be the same as the file defne
 
 #### Values
 
-String
+`String`
 
 #### Default
 
-"alg"
+`"alg"`
