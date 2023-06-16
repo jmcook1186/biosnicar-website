@@ -2,8 +2,13 @@
   "index": "Welcome",
   "quick-start": "Quick start",
   "docs": "Documentation",
+  "usage-examples": "Usage examples",
   "about": {
     "title": "About",
+    "type": "page"
+  },
+  "contributing": {
+    "title": "Contributing",
     "type": "page"
   }
 }
