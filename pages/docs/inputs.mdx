@@ -1,15 +1,22 @@
 # Input configuration
 
-BioSNICAR is configured by updating the values in the config file `inputs.yaml`. This file is divided into subsections for variables that corrspond to specific parts of the model. These are: 
+BioSNICAR is configured by updating the values in the config file `inputs.yaml`. This file is divided into subsections for variables that correspond to specific parts of the model. 
+These are: 
 
-1. **CTRL** variables that control how the program executes ("metaconfig")
-2. **RTM** variables that configure the radiative transfer model
-3. **ICE** variables that adjust the ice physical properties
-4. **PATHS** paths to specific files
-5. **IMPURITIES** properties of impurities included in the simulation
-6. **PLOT** configuration for plotting output data
+- **`PATHS`**: paths to specific files
+- **`CTRL`**: variables that control how the program executes ("metaconfig")
+- **`RTM`**: variables that configure the radiative transfer model
+- **`ICE`**: variables that adjust the ice physical properties
+- **`IMPURITIES`**: properties of impurities included in the simulation
+- **`PLOT`**: configuration for plotting output data
+- **`BIOOPTICAL`**: configuration for the bio-optical model, if it is being run
 
-The user sets the desired values in inputs.yaml and then there is no need to interact with any other script in the repository apart from simpyl runnign the driver python ./src/snicar_driver.py. However, the value chpices are quite nuanced and require some explanation. In this document, the meaning of each field in inputs.yaml is defined along with any constraints and defaults.
+The user sets the desired values in inputs.yaml and then there is no need to interact with any other script in the repository apart from simply running the driver:
+
+`python ./src/snicar_driver.py`. 
+
+However, the value choices are quite nuanced and require some explanation. 
+In this document, the meaning of each field in `inputs.yaml` is defined along with any constraints and defaults.
 
 ## PATHS
 
