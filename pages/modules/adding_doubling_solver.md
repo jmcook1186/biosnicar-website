@@ -17,317 +17,318 @@ boundary is a Fresnel reflecting surface. Total internal reflection is accounted
 This is always the appropriate solver to use in any  model configuration where solid ice layers and fresnel reflection are included.
 
 
-### adding_doubling_solver:
+## adding_doubling_solver:
 
 Control function for the adding-doubling solver.
 Makes function calls in sequence to generate, then return, an instance of `Outputs`.
 
-#### Args:
+### Args:
     
-    tau: optical thickness of ice column in m/m
-    ssa: single scattering albedo of ice column (dimensionless)
-    g: asymmetry parameter for ice column
-    L_snw: mass of ice in lg
-    ice: instance of Ice class
-    illumination: instance of Illumination class
-    model_config: instance of ModelConfig class
+- `tau`: optical thickness of ice column in m/m
+- `ssa`: single scattering albedo of ice column (dimensionless)
+- `g`: asymmetry parameter for ice column
+- `L_snw`: mass of ice in lg
+- `ice`: instance of Ice class
+- `illumination`: instance of Illumination class
+- `model_config`: instance of ModelConfig class
 
-#### Returns:
+### Returns:
     
-    outputs: Instance of Outputs class
+- `outputs`: Instance of Outputs class
 
-#### Raises:
+### Raises:
     
-    ValueError if violation of conservation of energy detected
+- `ValueError` if violation of conservation of energy detected
 
 
-### calc_reflectivity_transmittivity
+## calc_reflectivity_transmittivity
+
 Calculates reflectivity and transmissivity.
 Sets up new variables, applies delta transformation and makes initial calculations of reflectivity and transmissivity in each layer.
 
-#### Args:
-    tau0: initial optical thickness
-    ssa0: initial single scattering albedo
-    g0: initial asymmetry parameter
-    lyr: index of current layer
-    model_config: instance of ModelConfig class
-    exp_min: small number to avoid /zero error
-    rdif_a: reflectivity to diffuse irradiance at polarization angle == perpendicular
-    tdif_a: transmissivity to diffuse irradiance at polarization angle == perpendicular
-    trnlay: transmission through layer
-    mu0n: incident beam angle adjusted for refraction
-    epsilon: small number to avoid singularity
-    rdir: reflectivity to direct beam
-    tdir: transmissivity to direct beam
+### Args:
+- `tau0`: initial optical thickness
+- `ssa0`: initial single scattering albedo
+- `g0`: initial asymmetry parameter
+- `lyr`: index of current layer
+- `model_config`: instance of ModelConfig class
+- `exp_min`: small number to avoid /zero error
+- `rdif_a`: reflectivity to diffuse irradiance at polarization angle == perpendicular
+- `tdif_a`: transmissivity to diffuse irradiance at polarization angle == perpendicular
+- `trnlay`: transmission through layer
+- `mu0n`: incident beam angle adjusted for refraction
+- `epsilon`: small number to avoid singularity
+- `rdir`: reflectivity to direct beam
+- `tdir`: transmissivity to direct beam
 
-#### Returns:
-    rdir:
-    tdir:
-    ts:
-    ws:
-    gs:
-    lm:
+### Returns:
 
-### define_constants_arrays
-    Defines and instantiates constants required for adding-doubling calculations.
-    Defines and instantiates all variables required for calculating energy fluxes using the adding-doubling method.
+- `rdir`:
+- `tdir`:
+- `ts`:
+- `ws`:
+- `gs`:
+- `lm`:
 
-#### Args:
-    tau: optical thickness of ice column in m/m
-    g: asymmetry parameter for ice column
-    ssa: single scattering albedo of ice column (dimensionless)
-    ice: instance of Ice class
-    illumination: instance of Illumination class
-    model_config: instance of ModelConfig class
+## define_constants_arrays
 
-#### Returns:
-    tau0: initial optical thickness (m/m)
-    g0: initial asymmetry parameter (dimensionless)
-    ssa0: initial single scatterign albedo (dimensionless)
-    epsilon: small number to avoid singularity
-    exp_min: small number to avoid zero calcs
-    nr: real part of refractive index
-    mu0: cosine of direct beam zenith angle
-    mu0n: adjusted cosine of direct beam zenith angle after refraction
-    trnlay: transmission through layer
-    rdif_a: reflectivity to diffuse irradiance at polarization angle == perpendicular
-    rdif_b: reflectivity to diffuse irradiance at polarization angle == parallel
-    tdif_a: transmissivity to diffuse irradiance at polarization angle == perpendicular
-    tdif_b: transmissivity to diffuse irradiance at polarization angle == parallel
-    rdir: reflectivity to direct beam
-    tdir: transmissivity to direct beam
-    lyrfrsnl: index of uppermost fresnel reflecting layer in ice column
-    trnlay:
-    rdif_a:
-    rdif_b:
-    tdif_a:
-    tdif_b:
-    rdir:
-    tdir:
-    rdndif:
-    trntdr:
-    trndir:
-    trndif:
-    fdirup:
-    fdifup:
-    fdirdn:
-    fdifdn:
-    dfdir:
-    dfdif:
-    F_up:
-    F_dwn:
-    F_abs:
-    F_abs_vis:
-    F_abs_nir:
-    rupdif:
-    rupdir:
+Defines and instantiates all variables required for calculating energy fluxes using the adding-doubling method.
+
+### Args:
+- `tau`: optical thickness of ice column in m/m
+- `g`:asymmetry parameter for ice column
+- `ssa`: single scattering albedo of ice column (dimensionless)
+- `ice`: instance of Ice class
+- `illumination`: instance of Illumination class
+- `model_config`: instance of ModelConfig class
+
+### Returns:
+- `tau0`: initial optical thickness (m/m)
+- `g0`: initial asymmetry parameter (dimensionless)
+- `ssa0`: initial single scatterign albedo (dimensionless)
+- `epsilon`: small number to avoid singularity
+- `exp_min`: small number to avoid zero calcs
+- `nr`: real part of refractive index
+- `mu0`: cosine of direct beam zenith angle
+- `mu0n`: adjusted cosine of direct beam zenith angle after refraction
+- `trnlay`: transmission through layer
+- `rdif_a`: reflectivity to diffuse irradiance at polarization angle == perpendicular
+- `rdif_b`: reflectivity to diffuse irradiance at polarization angle == parallel
+- `tdif_a`: transmissivity to diffuse irradiance at polarization angle == perpendicular
+- `tdif_b`: transmissivity to diffuse irradiance at polarization angle == parallel
+- `rdir`: reflectivity to direct beam
+- `tdir`: transmissivity to direct beam
+- `lyrfrsnl`: index of uppermost fresnel reflecting layer in ice column
+- `trnlay`:
+- `rdif_a`:
+- `rdif_b`:
+- `tdif_a`:
+- `tdif_b`:
+- `rdir`:
+- `tdir`:
+- `rdndif`:
+- `trntdr`:
+- `trndir`:
+- `trndif`:
+- `fdirup`:
+- `fdifup`:
+- `fdirdn`:
+- `fdifdn`:
+- `dfdir`:
+- `dfdif`:
+- `F_up`:
+- `F_dwn`:
+- `F_abs`:
+- `F_abs_vis`:
+- `F_abs_nir`:
+- `rupdif`:
+- `rupdir`:
 
 
-### calc_reflection_transmission_from_top
+## calc_reflection_transmission_from_top
 
-alculates the reflection and transmission of energy at top surfaces.
+Calculates the reflection and transmission of energy at top surfaces.
 
-Calculate the solar beam transmission, total transmission, and reflectivity for diffuse radiation from below at interface lyr, the top of the current layer lyr.
 
-#### Args:
-    lyr: integer representing the index of the current layer (0 at top)
-    trnlay: transmissivity of current layer
-    rdif_a: reflectivity to diffuse irradiance at polarization state == perpendicular
-    rdir: reflectivity to direct beam
-    tdif_a: transmissivity to diffuse irradiance at polarization state == perpendicular
-    rdif_b: reflectivity to diffuse irradiance at polarization state == parallel
-    tdir: transmissivity to direct beam
-    tdif_b: transmissivity to diffuse irradiance at polarization state == parallel
-    model_config: instance of ModelConfig class
-    ice: instance of Ice class
-    trndir:
-    rdndif:
-    trntdr:
-    trndif:
+### Args:
+- `lyr`: integer representing the index of the current layer (0 at top)
+- `trnlay`: transmissivity of current layer
+- `rdif_a`: reflectivity to diffuse irradiance at polarization state == perpendicular
+- `rdir`: reflectivity to direct beam
+- `tdif_a`: transmissivity to diffuse irradiance at polarization state == perpendicular
+- `rdif_b`: reflectivity to diffuse irradiance at polarization state == parallel
+- `tdir`: transmissivity to direct beam
+- `tdif_b`: transmissivity to diffuse irradiance at polarization state == parallel
+- `model_config`: instance of ModelConfig class
+- `ice`: instance of Ice class
+- `trndir`:
+- `rdndif`:
+- `trntdr`:
+- `trndif`:
 
-#### Returns:
-    trndir: transmission of direct beam
-    trntdr: total transmission of direct beam for all layers above current layer
-    rdndif: downwards diffuse reflectance
-    trndif: diffuse transmission
+### Returns:
+- `trndir`: transmission of direct beam
+- `trntdr`: total transmission of direct beam for all layers above current layer
+- `rdndif`: downwards diffuse reflectance
+- `trndif`: diffuse transmission
 
-### apply_gaussian_integral
+## apply_gaussian_integral
 
 Applies gaussian integral to integrate over angles. Uses Gaussian integration to integrate fluxes hemispherically from N reference angles where N = len(gauspt) (default is 8).
 
-#### Args:
-    model_config: instance of ModelConfig class
-    exp_min: small number for avoiding div/0 error
-    ts: delta-scaled extinction optical depth for lyr
-    ws: delta-scaled single scattering albedo for lyr
-    gs: delta-scaled asymmetry parameter for lyr
-    epsilon: small number to avoid singularity
-    lm: lamda for use in delta scaling
-    lyr: integer representing index of current layer (0==top)
-    rdif_a: rdif_a: reflectance to diffuse energy w polarization state == perpendicular
-    tdif_a: rdif_a: transmittance to diffuse energy w polarization state == perpendicular
+### Args:
+- `model_config`: instance of ModelConfig class
+- `exp_min`: small number for avoiding div/0 error
+- `ts`: delta-scaled extinction optical depth for lyr
+- `ws`: delta-scaled single scattering albedo for lyr
+- `gs`: delta-scaled asymmetry parameter for lyr
+- `epsilon`: small number to avoid singularity
+- `lm`: lamda for use in delta scaling
+- `lyr`: integer representing index of current layer (0==top)
+- `rdif_a`: reflectance to diffuse energy w polarization state == perpendicular
+- `tdif_a`: transmittance to diffuse energy w polarization state == perpendicular
 
-#### Returns:
-    smt: accumulator for tdif gaussian integration
-    smr: accumulator for rdif gaussian integration
-    swt: sum of gaussian weights
+### Returns:
+- `smt`: accumulator for tdif gaussian integration
+- `smr`: accumulator for rdif gaussian integration
+- `swt`: sum of gaussian weights
 
-### update_transmittivity_reflectivity
+## update_transmittivity_reflectivity
 
 Updates transmissivity and reflectivity values after iterations.
 
-#### Args:
-    swt: sum of gaussian weights (for integrating over angle)
-    smr: accumulator for rdif gaussian integration
-    smt: accumulator for tdif gaussian integration
-    lyr: integer representign index of current layer (0 == top)
-    rdif_a: reflectance to diffuse energy w polarization state == perpendicular
-    rdif_b: reflectance to diffuse energy w polarization state == parallel
-    tdif_a: transmittance to diffuse energy w polarization state == perpendicular
-    tdif_b: transmittance to diffuse energy w polarization state == parallel
+### Args:
+- `swt`: sum of gaussian weights (for integrating over angle)
+- `smr`: accumulator for rdif gaussian integration
+- `smt`: accumulator for tdif gaussian integration
+- `lyr`: integer representign index of current layer (0 == top)
+- `rdif_a`: reflectance to diffuse energy w polarization state == perpendicular
+- `rdif_b`: reflectance to diffuse energy w polarization state == parallel
+- `tdif_a`: transmittance to diffuse energy w polarization state == perpendicular
+- `tdif_b`: transmittance to diffuse energy w polarization state == parallel
 
-#### Returns:
-    rdif_a: updated reflectance to diffuse energy w polarization state == perpendicular
-    rdif_b: updated reflectance to diffuse energy w polarization state == parallel
-    tdif_a: updated transmittance to diffuse energy w polarization state == perpendicular
-    tdif_b: updated transmittance to diffuse energy w polarization state == parallel
+### Returns:
+- `rdif_a`: updated reflectance to diffuse energy w polarization state == perpendicular
+- `rdif_b`: updated reflectance to diffuse energy w polarization state == parallel
+- `tdif_a`: updated transmittance to diffuse energy w polarization state == perpendicular
+- `tdif_b`: updated transmittance to diffuse energy w polarization state == parallel
 
 
-### calc_correction_fresnel_layer
+## calc_correction_fresnel_layer
 
 Calculates correction for Fresnel reflection and total internal reflection.
 Corrects fluxes for Fresnel reflection in cases where total internal reflection does and does not occur (angle > critical_angle).
 In TIR case fluxes are precalculated because ~256 gaussian points required for convergence.
 
-#### Args:
-    model_config: instance of ModelConfig class
-    ice: instance of Ice class
-    illumination: instance of Illumination class
-    mu0n: incidence angle for direct beam adjusted for refraction
-    mu0: incidence angle of direct beam at upper surface
-    nr: real part of refractive index
-    rdif_a: reflectance to diffuse energy w polarization state == perpendicular
-    rdif_b: reflectance to diffuse energy w polarization state == parallel
-    tdif_a: transmittance to diffuse energy w polarization state == perpendicular
-    tdif_b: transmittance to diffuse energy w polarization state == parallel
-    trnlay: transmission of layer == lyr
-    lyr: current layer (0 ==top)
-    rdir: reflectance to direct beam
-    tdir: transmission of direct beam
+### Args:
+- `model_config`: instance of ModelConfig class
+- `ice`: instance of Ice class
+- `illumination`: instance of Illumination class
+- `mu0n`: incidence angle for direct beam adjusted for refraction
+- `mu0`: incidence angle of direct beam at upper surface
+- `nr`: real part of refractive index
+- `rdif_a`: reflectance to diffuse energy w polarization state == perpendicular
+- `rdif_b`: reflectance to diffuse energy w polarization state == parallel
+- `tdif_a`: transmittance to diffuse energy w polarization state == perpendicular
+- `tdif_b`: transmittance to diffuse energy w polarization state == parallel
+- `trnlay`: transmission of layer == lyr
+- `lyr`: current layer (0 ==top)
+- `rdir`: reflectance to direct beam
+- `tdir`: transmission of direct beam
 
+### Returns:
+- `rdif_a`: updated reflectance to diffuse energy w polarization state == perpendicular
+- `rdif_b`: updated reflectance to diffuse energy w polarization state == parallel
+- `tdif_a`: updated transmittance to diffuse energy w polarization state == perpendicular
+- `tdif_b`: updated transmittance to diffuse energy w polarization state == parallel
+- `trnlay`: updated transmission of layer == lyr
+- `rdir`:updated reflectance to direct beam
+- `tdir`: updated transmission of direct beam
 
-#### Returns:
-    rdif_a: updated reflectance to diffuse energy w polarization state == perpendicular
-    rdif_b: updated reflectance to diffuse energy w polarization state == parallel
-    tdif_a: updated transmittance to diffuse energy w polarization state == perpendicular
-    tdif_b: updated transmittance to diffuse energy w polarization state == parallel
-    trnlay: updated transmission of layer == lyr
-    rdir: updated reflectance to direct beam
-    tdir: updated transmission of direct beam
-
-### calc_reflection_below
+## calc_reflection_below
 
 Calculates dir/diff reflectyivity for layers below surface.
 Computes reflectivity to direct (rupdir) and diffuse (rupdif) radiation for layers below by adding succesive layers starting from the underlying ice and working upwards.
 
-#### Args:
-    model_config: instance of ModelConfig class
-    ice: instance of Ice class
-    rdif_a: reflectance to diffuse energy w polarization state == perpendicular
-    rdif_b: reflectance to diffuse energy w polarization state == parallel
-    tdif_a: transmittance to diffuse energy w polarization state == perpendicular
-    tdif_b: transmittance to diffuse energy w polarization state == parallel
-    trnlay: transmission of layer == lyr
-    rdir: reflectance to direct beam
-    tdir: transmission of direct beam
-    rupdif: upwards flux direct
-    rupdir: upwards flux diffuse
+### Args:
+- `model_config`: instance of ModelConfig class
+- `ice`: instance of Ice class
+- `rdif_a`: reflectance to diffuse energy w polarization state == perpendicular
+- `rdif_b`: reflectance to diffuse energy w polarization state == parallel
+- `tdif_a`: transmittance to diffuse energy w polarization state == perpendicular
+- `tdif_b`: transmittance to diffuse energy w polarization state == parallel
+- `trnlay`: transmission of layer == lyr
+- `rdir`: reflectance to direct beam
+- `tdir`: transmission of direct beam
+- `rupdif`: upwards flux direct
+- `rupdir`: upwards flux diffuse
 
-#### Returns:
-    rupdir: upwards flux direct
-    rupdif: upwards flux diffuse
-
-
-### trans_refl_at_interfaces
-    """Calculates transmission and reflection at layer interfaces.
-
-#### Args:
-    model_config: instance of ModelConfig class
-    ice: instance of Ice class
-    rupdif: total diffuse radiation reflected upwards
-    rupdir: total direct radiation reflected upwards
-    rdndif: downwards reflection of diffuse radiation
-    trndir: transmission of direct radiation
-    trndif: transmission of diffuse radiation
-    trntdr: total transmission
-    fdirup:
-    fdirdn:
-    fdifup:
-    fdifdn:
-    dfdir:
-    dfdif:
-
-#### Returns:
-    fdirup: upwards flux of direct radiation
-    fdifup: upwards flux of diffuse radiation
-    fdirdn: downwards flux of direct radiation
-    fdifdn: downwards flux of diffuse radiation
+### Returns:
+- `rupdir`: upwards flux direct
+- `rupdif`: upwards flux diffuse
 
 
-### calculate_fluxes
+## trans_refl_at_interfaces
+
+Calculates transmission and reflection at layer interfaces.
+
+### Args:
+- `model_config`: instance of ModelConfig class
+- `ice`: instance of Ice class
+- `rupdif`: total diffuse radiation reflected upwards
+- `rupdir`: total direct radiation reflected upwards
+- `rdndif`: downwards reflection of diffuse radiation
+- `trndir`: transmission of direct radiation
+- `trndif`: transmission of diffuse radiation
+- `trntdr`: total transmission
+- `fdirup`:
+- `fdirdn`:
+- `fdifup`:
+- `fdifdn`:
+- `dfdir`:
+- `dfdif`:
+
+### Returns:
+- `fdirup`: upwards flux of direct radiation
+- `fdifup`: upwards flux of diffuse radiation
+- `fdirdn`: downwards flux of direct radiation
+- `fdifdn`: downwards flux of diffuse radiation
+
+
+## calculate_fluxes
 
 Calculates total fluxes in each layer and for entire column.
 
-#### Args:
-    model_config: instance of ModelConfig class
-    ice: instance of Ice class
-    illumination: instance of Illumination class
-    fdirup: upwards flux of direct radiation
-    fdifup: upwards flux od diffuse radiation
-    fdirdn: downwards flux of direct radiation
-    fdifdn: downwards flux of diffuse radiation
-    F_up:
-    F_dwn:
-    F_abs:
-    F_abs_vis:
-    F_abs_nir:
+### Args:
+- `model_config`: instance of `ModelConfig` class
+- `ice`: instance of `Ice` class
+- `illumination`: instance of `Illumination` class
+- `fdirup`: upwards flux of direct radiation
+- `fdifup`: upwards flux od diffuse radiation
+- `fdirdn`: downwards flux of direct radiation
+- `fdifdn`: downwards flux of diffuse radiation
+- `F_up`:
+- `F_dwn`:
+- `F_abs`:
+- `F_abs_vis`:
+- `F_abs_nir`:
 
-#### Returns:
-    albedo: ratio of upwards fluxes to incoming irradiance
-    F_abs: absorbed flux in each layer
-    F_btm_net: net fluxes at bottom surface
-    F_top_pls: upwards flux from upper surface
-
-
-### conservation_of_energy_check
-
-hecks there is no conservation of energy violation.
-
-#### Args:
-    illumination: instance of Illumination class
-    F_abs: absorbed flux in each layer
-    F_btm_net: net flux at bottom surface
-    F_top_pls: upwards flux from upper boundary
-
-#### Returns:
-    None
-
-#### Raises:
-    ValueError is conservation of energy error is detected
+### Returns:
+- `albedo`: ratio of upwards fluxes to incoming irradiance
+- `F_abs`: absorbed flux in each layer
+- `F_btm_net`: net fluxes at bottom surface
+- `F_top_pls`: upwards flux from upper surface
 
 
-### get_outputs
+## conservation_of_energy_check
+
+Checks there is no conservation of energy violation.
+
+### Args:
+- `illumination`: instance of Illumination class
+- `F_abs`: absorbed flux in each layer
+- `F_btm_net`: net flux at bottom surface
+- `F_top_pls`: upwards flux from upper boundary
+
+### Returns:
+- `None`
+
+### Raises:
+- `ValueError` is conservation of energy error is detected
+
+
+## get_outputs
 
 Assimilates useful data into instance of Outputs class.
 
-#### Args:
-    illumination: instance of Illumination class
-    albedo: ratio of upwwards fluxes and irradiance
-    model_config: instance of ModelConfig class
-    L_snw: mass of ice in each layer
-    F_abs: absorbed flux in each layer
-    F_btm_net: net flux at bottom surface
+### Args:
+- `illumination`: instance of Illumination class
+- `albedo`: ratio of upwwards fluxes and irradiance
+- `model_config`: instance of ModelConfig class
+- `L_snw`: mass of ice in each layer
+- `F_abs`: absorbed flux in each layer
+- `F_btm_net`: net flux at bottom surface
 
-#### Returns:
-    outputs: instance of Outputs class
+### Returns:
+- `outputs`: instance of Outputs class
 

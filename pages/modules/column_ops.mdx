@@ -10,11 +10,11 @@ Takes configuration from ice and model_config and uses the data to calculate the
 
 Function calls are made to add liquid water coatings or adjust the optical properties for aspherical grains where toggled.
 
-### Args:
+### Args
 - `ice`: instance of Ice class
 - `model_config`: instance of ModelConfig class
 
-### Returns:
+### Returns
 - `ssa_snw`: single scatterign albedo of each layer
 - `g_snw`: asymmetry parameter of each layer
 - `mac_snw`: mass absorption coefficient of each layer
@@ -27,7 +27,7 @@ Recalculates layer optical properties where grains are coated in liquid water.
 Feature originally added by Niklas Bohn. Where value of water exceeds value of rds for a given layer it is interpreted as having a liquid water film. 
 In this case Mie calculations for a coated sphere are executed with the outer coating having radius `water - rds`.
 
-### Args:
+### Args
 - `ice`: instance of Ice class
 - `model_config`: instance of ModelConfig class
 - `ssa_snw`: single scattering albedo of each layer
@@ -35,15 +35,13 @@ In this case Mie calculations for a coated sphere are executed with the outer co
 - `mac_snw`: mass absorption coefficient of each layer
 - `i`: layer counter
 
-### Returns:
+### Returns
 - `ssa_snw: updated single scattering albedo for each layer
 - `g_snw: updated asymmetry parameter for each layer
 - `mac_snw: updated mass absorption coefficient for each layer
 
-### Raises:
+### Raises
 - `ValueError` if `ice.shp!= 0` (i.e. grains not spherical)
-
-
 
 
 ## correct_for_asphericity
@@ -59,12 +57,12 @@ Ice grain shape can be:
 - `3` = koch snowflake,
 - `4` = hexagonal prisms
 
-### Args:
+### Args
 - `ice`: instance of Ice class
 - `g_snw`: asymmetry parameter for each layer
 - `i`: layer counter
 
-### Returns:
+### Returns
 - `g_snw`: updated asymmetry parameter for layer
 
 
@@ -79,7 +77,7 @@ provided in ppb, but concentration of algae can also be given in cells/mL.
 There is also a cfactor attribute that is used as a multiplier in this function. This is a "concentrating factor" that can be applied to account
 for the coarse resolution of field sampling compared to the fine resolution of the model.
 
-### Args:
+### Args
 - `ssa_snw`: single scattering albedo of eahc layer
 - `g_snw`: asymmetry parameter for each layer
 - `mac_snw`: mass absorption coefficient of each layer
@@ -87,7 +85,7 @@ for the coarse resolution of field sampling compared to the fine resolution of t
 - `impurities`: array containing instances of Impurity class
 - `model_config`: instance of ModelConfig class
 
-### Returns:
+### Returns
 - `tau`: updated optical thickness
 - `ssa`: updated single scattering albedo
 - `g`: updated asymmetry parameter

@@ -16,13 +16,13 @@ user changes attributes of `Ice` or `Illumination` classes.
 
 Note that there are two classes - `Illumination` and `Ice` that have associated class functions.
 
-### Impurity (class)
+## Impurity (class)
 
 Light absorbing impurity.
 
 Instances of Impurity are one discrete type of light absorbing impurity with a distinct set of optical properties.
 
-#### Attributes
+### Attributes
 
 - `name`: name of impurity
 - `cfactor`: concentration factor used to convert field measurements to model config (default=1)
@@ -35,13 +35,13 @@ Instances of Impurity are one discrete type of light absorbing impurity with a d
 - `g`: asymmetry parameter
 
 
-### Ice (class)
+## Ice (class)
 Snow or ice column physical properties.
 
 Instances of Ice contain all the physical properties of each vertical layer of the
 snow or ice column and the underlying surface.
 
-#### Attributes
+### Attributes
 
 - `dz`: array containing thickness of each layer in m
 - `layer_type`: array containing type (0 = grains, 1 = solid ice) in each layer
@@ -58,33 +58,33 @@ snow or ice column and the underlying surface.
 - `ar`: aspect ratio of grains in each layer where layer_type==0
 - `nbr_lyr`: number of vertical layers
 
-#### functions
-##### calculate_refractive_index
+### functions
+#### calculate_refractive_index
 
 Calculates ice refractive index from initialized class attributes.
 
 Takes `self.rf` and config from `inputs.yaml` and uses them to calculate
 new attributes related to the ice refractive index.
 
-###### Args
+##### Args
     `self`
 
-###### Returns
+##### Returns
 - `ref_idx_im`: imaginary part of refractive index
 - `ref_idx_re`: real part of refractive index
 - `fl_r_dif_a`: precomputed diffuse reflectance "perpendicular polarized)
 - `fl_r_dif_b`: precomputed diffuse reflectance "parallel polarized)
 - `op_dir`: directory containing optical properties
 
-###### Raises
+##### Raises
     `ValueError` if rf out of range
 
-### Illumination (class)
+## Illumination (class)
 
 Properties of incoming irradiance.
 Instances of Illumination contain all data relating to the incoming irradiance.
 
-#### Attributes
+### Attributes
 - `direct`: Boolean toggling between direct and diffuse irradiance
 - `solzen`: solar zenith angle in degrees from the vertical
 - `incoming`: choice of spectral distribution from file 0-6
@@ -92,38 +92,38 @@ Instances of Illumination contain all data relating to the incoming irradiance.
 - `stubs`: array of stub strings for selecting irradiance files
 - `nbr_wvl`: number fo wavelengths (default 480)
 
-#### Functions
-##### calculate_irradiance
+### Functions
+#### calculate_irradiance
 
 Calculates irradiance from initialized attributes.
 
 Takes `mu_not`, `incoming` and `stubs` from `self` and calculates irradiance.
 
-###### Args
+##### Args
 `self`
 
-###### Returns:
+##### Returns:
 - `flx_slr`: incoming flux from file
 - `Fd:` diffuse irradiance
 - `Fs:` direct irradiance
 
 
-###### Raises
+##### Raises
 `ValueError` is incoming is out of range
 
-### RTConfig
+## RTConfig
 
 Radiative transfer configuration.
 
-#### Attributes:
+### Attributes:
 - `aprx_type`: choice of two-stream approximation (0-2)
 - `delta`: Boolean to toggle delta transformation (0/1)
 
 
-### ModelConfig (class)
+## ModelConfig (class)
 Model configuration.
 
-#### Attributes
+### Attributes
 - `smooth`: Boolean to toggle savitsky-golay filter to smooth albedo
 - `window_size`: window size to use for smoothing func
 - `poly_order`: order of polynomial used to smooth albedo
@@ -139,10 +139,10 @@ Model configuration.
 - `vis_max_idx`: index for upper visible wavelength (default 0.75 um)
 - `nir_max_idx`: index for upper NIR wavelength (default 4.995 um)
 
-### Outputs (class)
+## Outputs (class)
 Output data from radiative transfer calculations.
 
-#### Attributes
+### Attributes
 - `heat_rt`: heating rate in each layer
 - `BBAVIS`: broadband albedo in visible range
 - `BBANIR`: broadband albedo in NIR range
@@ -157,11 +157,11 @@ Output data from radiative transfer calculations.
 - `abs_nir_tot`: total absorbed energy across NIR spectrum
 - `absorbed_flux_per_layer`: total absorbed flux per layer
 
-### PlotConfig (class)
+## PlotConfig (class)
 
 Configuration for plotting figures.
 
-#### Attributes
+### Attributes
 - `figsize`: size of figure
 - `facecolor`: colour of background
 - `grid`: toggles grid visibility
@@ -177,11 +177,11 @@ Configuration for plotting figures.
 - `show`: toggles showing plot on screen
 - `save`: toggles saving figure to file
 
-### BioOpticalConfig (class)
+## BioOpticalConfig (class)
 
 Configuration class for bio-optical model.
 
-#### Attributes
+### Attributes
 - `wvl`: (numpy array, default: np.arange(0.200, 4.999, 0.001)) wavelengths in spectral range of interest (in µm, 1nm step)
 - `wet_density`:  (int - used if biomass: True) density of wet biomass (kg/m3 - 1060 and 1160 for snow and glacier algae,Chevrollier et al. 2022)
 - `dry_density`:  (int - used if biomass: True) density of dry biomass (kg/m3 - 625 and 684 for snow and glacier algae, Chevrollier et al. 2022)
