@@ -1,14 +1,14 @@
-import Image from 'next/image'
+## Get started with biosnicar
 
-# Quick start
+Here you will find instructions for getting up and running with biosnicar, either via the web app or using the model code.
 
 ## Web app
 
-BioSNICAR is available as a web application. Simply direct your browser to
+`biosnicar` is available as a web application. Simply direct your browser to
 
 [https://bit.ly/biosnicar](https://bit.ly/biosnicar)
 
-This is the simplest way to use BioSNICAR. You can set your input configuration in the labelled fields on the left hand side of the screen and the plot in the centre of the screen will automatically update, providing the spectral albedo. You can also download the spectral albedo data as a csv file by clicking Download Data.
+This is the simplest way to use `biosnicar`. You can set your input configuration in the labelled fields on the left hand side of the screen and the plot in the centre of the screen will automatically update, providing the spectral albedo. You can also download the spectral albedo data as a csv file by clicking Download Data.
 
 ![](/../assets/app.png)
 
@@ -20,7 +20,7 @@ There are some restrictions on the parameter values and the set of available par
 
 ### Installing Environment/Dependencies
 
-If you want to run BioSNICAR in a local Python environment but do not have Python installed, download Python >3.6. 
+If you want to run `biosnicar` in a local Python environment but do not have Python installed, download Python >3.6. 
 It is recommended to use a fresh environment using conda or venv. Once activated, install the project dependencies with:
 
 ```sh
@@ -30,7 +30,7 @@ Finally, if you do not wish to install anything on your computer, but you use VS
 
 ### Running the model
 
-The model driver and all the core source code can be found in `/src`. From the top level directory (`~/BioSNICAR_GO_PY`), run:
+The model driver and all the core source code can be found in `/src`. From the top level directory (`~/`biosnicar_py`), run:
 
 ```sh
 python ./src/snicar_driver.py
@@ -48,8 +48,8 @@ Most users should have no reason to modify any other file in this repository exc
 
 More complex applications of the model code, for example model inversions, field/model comparisons etc are included under `/experiments`, with details provided in that module’s own README.
 
-We have also maintained a separate version of the BioSNICAR codebase that uses a “functional” progamming style rather than the object-oriented approach taken here. 
-We refer to this as BioSNICAR Classic and it is available in the classic branch of this repository. It might be useful for people already familiar with FORTRAN or Matblab implementations from previous literature. 
+We have also maintained a separate version of the `biosnicar` codebase that uses a “functional” progamming style rather than the object-oriented approach taken here. 
+We refer to this as `biosnicar` Classic and it is available in the classic branch of this repository. It might be useful for people already familiar with FORTRAN or Matblab implementations from previous literature. 
 The two branches are entirely equivalent in their simulations but very different in their programming style. 
 The object oriented approach is preferred because it is more Pythonic, more flexible and easier to debug.
 
@@ -63,9 +63,9 @@ For example, you may wish to conduct an experiment with 10 different model confi
 Then execute all the functions inside the default `snicar_driver.py` in a simple for loop, assigning each file to input_files in turn. 
 This is good for reproducibility as those config files can be archived.
 
-### BioOptical Model
+### Bio-optical model
 
 The bio-optical model is generally run separately to the main model code because most users use the default optical properties provided in the downloaded repository. 
 However, some users may wish to generate new files. To do this, simply call `run_biooptical_model()` in the driver script after updating the biooptical section of `inputs.yaml`. 
 We have included the function call in the template driver script but left it commented out as we expect it to be rarely used. 
-More details are provided in the BioSNICAR Functions section of these docs.
+More details are provided in the `biosnicar` Functions section of these docs.
