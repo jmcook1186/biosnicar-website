@@ -1,7 +1,8 @@
 {
   "index": "Welcome",
   "quick-start": "Quick start",
-  "docs": "Documentation",
+  "guides": "Guides",
+  "modules": "Modules",
   "usage-examples": "Usage examples",
   "about": {
     "title": "About",

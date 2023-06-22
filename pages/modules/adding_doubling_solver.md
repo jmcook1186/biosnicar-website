@@ -1,15 +1,11 @@
-# BioSNICAR Functions
-
-Here you will find reference documentation for all the BioSNICAR model functions, organized by module.
-
-## adding_doubling_solver module
+# adding_doubling_solver module
 
 Here the ice/impurity optical properties and illumination conditions are used to calculate energy fluxes between the ice, atmosphere and
 underlying substrate.
 
-Typically this function would be called from snicar_driver() because it takes as inputs intermediates that are calculated elsewhere.
-Specifically, the functions setup_snicar(), get_layer_OPs() and mix_in_impurities() are called to generate tau, ssa, g and L_snw,
-which are then passed as inputs to adding_doubling_solver().
+Typically this function would be called from `snicar_driver()` because it takes as inputs intermediates that are calculated elsewhere.
+Specifically, the functions `setup_snicar()`, `get_layer_OPs()` and `mix_in_impurities()` are called to generate `tau`, `ssa`, `g` and `L_snw`,
+which are then passed as inputs to `adding_doubling_solver()`.
 
 The adding-doubling routine implemented here originates in Brieglib and Light (2007) and was coded up in Matlab by Chloe Whicker and Mark
 Flanner to be published in Whicker (2022: The Cryosphere). Their scripts were the jumping off point for this script and their code is still
@@ -334,21 +330,4 @@ Assimilates useful data into instance of Outputs class.
 
 #### Returns:
     outputs: instance of Outputs class
-
-
-## biosnicar.bubble_reff_calculator module
-
-Calculates effective radius of air bubbles.
-
-This script is for taking specific surface area for bubbly ice an calculating the effective radius of the bubbles assuming a lognormal bubble size distribution.
-
-The reason this is required is that the well-known conversion between SSA and r_eff:
-
-```
-r_eff = 3/(P_i * SSA) where P_i is density of ice (917 kg m-3)
-```
-
-gives the effective radius of a discrete grain of given SSA, for a collection of bubbles in a bulk medium of ice a more nuanced calculation is required.
-
-The derivation of the calculations are explained in the pdf ./assets/SSA_derivation.pdf from Chloe Whicker (UMich).
 
