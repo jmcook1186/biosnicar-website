@@ -1,0 +1,240 @@
+# Toon solver
+
+Modules contains all functions required to run the Toon (1989) radiative transfer solver.
+
+## toon_solver
+
+Makes function calls relating to radiative transfer solver in sequence and returns outputs.
+
+### Args
+- `tau`: optical thickness
+- `ssa`: single scattering albedo
+- `g`: asymmetry parameter
+- `L_snw`: mass of ice in each layer
+- `ice`: instance of Ice class
+- `illumination`: instance of Illumination class
+- `model_config`: instance of ModelConfig class
+- `rt_config`: instance of RTConfig class
+
+### Returns
+- `outputs`: instance of Outputs class
+
+## validate_inputs_toon
+
+Checks for known invalid data configurations that break the Toon solver. If invalid config is detected a `ValueError` is raised, halting execution.
+
+### Args:
+- `ice`: class representing the ice column and containing related physical constants
+- `illumination`: class representing incoming irradiance containing related physical constants
+
+### Returns:
+- `None`
+
+### Raises:
+- `ValueError`: raised with descriptive error message if invalid input detected
+
+## delta_transformation
+
+Applies Delta transformation.
+
+### Args:
+- `rt_config`: instance of RTConfig class
+- `g`: asymmetry parameter
+- `ssa`: single scatterign albedo
+- `tau`: optical thickness
+
+### Returns:
+- `g_star`: delta scaled asymmetry parameter
+- `ssa_star`: delta scaled singloe scattering albedo
+- `tau_star`: delta scaled optical thickness
+
+## calculate_optical_depth_of_column
+
+Calculates column optical thickness.
+
+### Args:
+- `ice`: instance of Ice class
+- `model_config`: instance of ModelConfig class
+- `tau_star`: delta scaled optical thickness
+
+### Returns:
+- `tau_clm`: optical thickness of column
+
+## boundary_condition
+Calculates reflectance from underlying surface.
+
+### Args:
+- `ice`: instance of Ice class
+- `illumination`: instance of Illumination class
+- `tau_clm`: optical thickness of column
+- `tau_star`: delta_scaled optical thickness
+
+### Returns:
+- `S_sfc`: reflectance from underlying surface
+
+## two_stream_approximation
+
+Applies two-stream approximation.
+
+Three 2-stream approximations are available: Eddington, Quadrature and hemispheric mean. The equations for each
+approximation are provided in Toon et al. (1989) Table 1.
+
+The hemispheric mean scheme is derived by assuming that the phase function is equal to 1  + g  in the forward scattering
+hemisphere and to 1  - g  in the backward scattering hemisphere. The asymmetry parameter is g. The hemispheric mean is only
+useful for infrared wavelengths.
+
+### Args:
+- `rt_config`: instance of RTConfig class
+- `ssa_star`: delta scaled signle scattering albedo
+- `g_star`: delta scaled asymmetry parameter
+
+### Returns:
+- `gamma1`: coefficient for matrix solution
+- `gamma2`: coefficient for matrix solution
+- `gamma3`: coefficient for matrix solution
+- `gamma4`: coefficient for matrix solution
+- `mu_one`: adjusted incidence angle
+
+## calculate_matrix_coefficients
+
+Calculates coefficients required for matrix calculation.
+
+### Args
+- `gamma1`: coefficient for matrix solution
+- `gamma2`: coefficient for matrix solution
+- `tau_star`: delta scaled optical thickness
+
+### Returns
+- `lam`: coefficient for matrix solution
+- `GAMMA`: coefficient for matrix solution
+- `e1`: coefficient for matrix solution
+- `e2`: coefficient for matrix solution
+- `e3`: coefficient for matrix solution
+- `e4`: coefficient for matrix solution
+
+## c_functions
+Calculate fluxes through column.
+
+### Args
+- `ice`: instance of Ice class
+- `model_config`: instance of ModelConfig class
+- `illumination`: instance of Illumination class
+- `ssa_star`: delta scaled single scatterign albedo
+- `tau_star`: delta scaled optical thickness
+- `tau_clm`: column optical thickness
+- `lam`: coefficient for matrix solution
+- `gamma1`: coefficient for matrix solution
+- `gamma2`: coefficient for matrix solution
+- `gamma3`: coefficient for matrix solution
+- `gamma4`: coefficient for matrix solution
+
+### Returns
+- `C_pls_btm`: upwards flux from bottom of layer
+- `C_mns_btm`: downwards flux from bottom of layer
+- `C_pls_top`: upwards flux from top of layer
+- `C_mns_top`: downwards flux from top of layer
+
+## matrix_solver
+Execute matrix calculation.
+
+### Args
+- `ice`: instance of Ice class
+- `illumination`: instance of Illumination class
+- `model_config`: instance of ModelConfig class
+- `s_sfc`: reflectance of underlying surface
+- `C_pls_btm`: upwards flux from bottom of layer
+- `C_mns_btm`: downwards flux from bottom of layer
+- `C_pls_top`: upwards flux from top of layer
+- `C_mns_top`: downwards flux from top of layer
+- `e1`: coefficient for matrix solution
+- `e2`: coefficient for matrix solution
+- `e3`: coefficient for matrix solution
+- `e4`: coefficient for matrix solution
+
+### Returns
+- `Y`: intermediate representing t-0 boundary fluxes
+
+## layer_fluxes
+Calculates total fluxes
+
+### Args
+- `ice`: instance of Ice class
+- `illumination`: instance of Illumination class
+- `model_config`: instance of ModelConfig class
+- `tau_clm`: optical thickness of column
+- `lam`: intermediate coefficient
+- `GAMMA`: intermediate coefficient
+- `tau_star`: delta scaled optical thickness
+- `C_pls_btm`: upwards flux from bottom of layer
+- `C_mns_btm`: downwards flux from bottom of layer
+- `C_pls_top`: upwards flux from top of layer
+- `C_mns_top`: downwards flux from top of layer
+- `e1`: coefficient for matrix solution
+- `e2`: coefficient for matrix solution
+- `e3`: coefficient for matrix solution
+- `e4`: coefficient for matrix solution
+- `mu_one`: adjusted indicence angle
+
+### Returns
+
+- `F_net`: net flux in each layer
+- `F_top_pls`: net upwards flux from upper surface of each layer
+- `F_btm_net`: net flux at bottom surface
+- `F_top_net`: net fluxes at upper surface
+- `intensity`: mean intensity at base of each layer
+
+## absorbed_fluxes
+Calculates energy absorbed in each layer.
+
+### Args
+- `ice`: instance of Ice class
+- `model_config`: instance of ModelConfig class
+- `F_net`: net flux in each layer
+- `F_top_net`: net flux at upper model boundary
+
+### Returns:
+- `F_abs`: absorbed flux in each layer
+
+
+## conservation_of_energy_check
+
+Checks there is no conservation of energy violation.
+
+### Args
+- `illumination`: instance of Illumination class
+- `F_abs`: absorbed flux in each layer
+- `F_btm_net`: net flux at bottom surface
+- `F_top_pls`: upwards flux from upper boundary
+
+### Returns
+- `None`
+
+### Raises
+- `ValueError` is conservation of energy error is detected
+
+
+## get_outputs
+Assimilates useful data into instance of Outputs class.
+
+### Args
+- `illumination`: instance of Illumination class
+- `albedo`: ratio of upwwards fluxes and irradiance
+- `model_config`: instance of ModelConfig class
+- `L_snw`: mass of ice in each layer
+- `F_abs`: absorbed flux in each layer
+- `F_btm_net`: net flux at bottom surface
+
+### Returns
+- `outputs`: instance of Outputs class
+
+
+## apply_smoothing_function
+
+Optionally applies a Savitsky-Golay smoothing filter to the returned albedo
+
+### Args
+- `model_config`: instance of ModelConfig class
+- `albedo`: the model-predicted spectral albedo
+
+### Returns
+- `albedo`: smoothed spectral albedo

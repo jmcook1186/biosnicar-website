@@ -1,0 +1,45 @@
+# setup_snicar module
+
+This module sets up BioSNICAR by creating instances of all the relevant classes using the data provided in `inputs.yaml`.
+
+## setup_snicar
+
+Calls internal functions and returns class instances as expected by BioSNICAR model.
+
+Args
+- `None`
+
+Returns
+- `ice`: instance of Ice class
+- `illumination`: instance of Illumination class
+- `rt_config`: instance of RTConfig class
+- `model_config`: instance of ModelConfig class
+- `plot_config`: instance of PlotConfig class
+- `display_config`: instance of DisplayConfig class
+
+
+## build_classes
+
+Instantiates classes according to config in yaml file.
+
+### Args
+    None
+
+Returns
+- `ice`: instance of Ice class
+- `illumination`: instance of Illumination class
+- `rt_config`: instance of RTConfig class
+- `model_config`: instance of ModelConfig class
+- `plot_config`: instance of PlotConfig class
+- `display_config`: instance of DisplayConfig class
+
+## build_impurities_array
+
+Creates an array of instances of Impurity with properties defined in yaml file.
+
+### Args:
+- `None`
+
+Returns:
+- `impurities`: array of instances of Impurity
+
