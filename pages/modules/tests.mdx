@@ -1,1 +1,326 @@
-# beep
+# biosnicar tests
+
+Runs benchmarking and fuzzing tests on `biosnicar`.
+
+To run configure these tests, update the values in `conftest.py`
+
+Then navigate to the tests folder and run
+
+`pytest`
+
+The tests will automatically run - green dots indicate tests passing successfully. A plot of N random spectra pairs will be saved to the /tests folder.
+
+The fuzzer exists to run `biosnicar` with a wide range of input variables to check that no combinations break the code. It is quite memory intensive
+to fuzz over a very large parameter space. 10^3 runs is ok on a decent spec laptop. I have divided the fuzzer into two separate functions. One
+has coverage for "config" variables that set up the radiative transfer e.g. direct vs diffuse, approximation type, etc. The other is more for
+conditions of the ice column, e.g. density, effective radius, LAPs. 
+
+To toggle the fuzzer on/off change the value of `fuzz` in `conftest.py`
+
+## Fixtures
+
+### get_matlab_data
+
+Loads benchmark data from matlab model
+##### Returns    
+
+- csv file `matlab_benchmark_data.csv`
+
+### get_matlab_data_clean
+
+Loads benchmark data from matlab model for clean ice
+
+#### Returns 
+
+- csv file `matlab_benchmark_data_clean.csv`
+
+
+### get_python_data
+
+Loads data from `biosnicar` for benchmarking.
+
+#### Returns
+
+- csv file `/py_benchmark_data.csv`
+
+
+### get_python_data_clean
+
+Loads data from `biosnicar` for benchmarking clean ice.
+
+#### Return
+
+- csv `py_benchmark_data_clean.csv`
+
+
+### set_tolerance
+
+Sets the error tolerance for tests to pass. Default 1e-5
+
+#### Returns 
+
+- `1e-5` (default)
+
+
+### get_n_spectra
+
+Defines how many random spectra pairs to plot.
+
+#### Return 
+
+- `25` (default)
+
+
+### fuzz
+
+Toggles fuzzing tests on/off.
+
+#### Return 
+
+- `True` (default) or `False`
+
+
+### new_benchmark_ad
+
+Toggles generation of new `biosnicar` benchmarking data on/off.
+
+#### Return 
+
+- `True` (default) or `False`
+
+
+### new_benchmark_ad_clean
+
+Toggles generation of new `biosnicar` becnhmarking data on/off for clean ice.
+
+#### Return 
+
+- `True` or `False` (default)
+
+
+### input_file
+
+#### Return 
+
+- path to yaml file `inputs.yaml`
+
+
+## tests
+
+### test_AD_solver
+
+Tests Toon solver against SNICAR_ADv4 benchmark.
+
+This func generates a new file - `py_benchmark_data.csv` - that contains spectral and broadband albedo simulated by `biosnicar` for a range of input
+configurations. The same set of simulations was also run using a previously published version of the SNICAR code written in Matlab by Chloe Whicker at
+University of Michigan and run on the UMich server. This function only creates the equivalent dataset using `biosnicar`, it doesn't compare the two.
+
+Equivalence between the Python and Matlab model configuration is controlled by a call to `match_matlab_config()`. This function can be toggled off by setting
+`new_benchmark_ad` to `False` in `conftest.py`.
+
+#### Args
+
+- `new_benchmark_ad`: Boolean toggling this function on/off
+
+#### Returns
+- `None` but saves `py_benchmark_data.csv` to `./tests/test_data/`
+
+
+
+
+### test_AD_solver_clean
+
+Tests Toon solver against SNICAR_ADv4 benchmark for impurity-free ice.
+
+This func generates a new file - `py_benchmark_data_clean.csv` - that contains spectral and broadband albedo simulated by `biosnicar` for a range of input
+configurations. The same set of simulations was also run using a previously published version of the SNICAR code written in Matlab by Chloe Whicker at
+University of Michigan and run on the UMich server. This function only creates the equivalent dataset using `biosnicar`, it doesn't compare the two.
+The difference between this function and test_v4 is that no impurities are included in the model configuration.
+
+Equivalence between the Python and Matlab model configuration is controlled by a call to match_matlab_config(). This function can be toggled off by setting
+`new_benchmark_clean` to `False` in `conftest.py`.
+
+#### Args
+
+- `new_benchmark_clean`: Boolean toggling this function on/off
+
+#### Returns
+
+- None but saves py_benchmark_data_clean.csv to ./tests/test_data/
+
+
+### test_realistic_bba_ad
+
+Simple test that ensures broadband albedo predicted by model never goes outside valid range of 0-1. Also tests that arrays are alwas consistent lengths.
+
+#### Args
+- `get_matlab_data`: matlab-snicar-generated csv file of spectral and broadband albedo
+- `get_python_data`: `biosnicar` generated csv file of spectral and broadband albedo
+
+#### Returns
+
+- `None`
+
+#### Raises
+- tests fail if the two datasets differ in length
+- tests fail if any BBA values in matlab data are <0 or >1
+- tests fail if any BBA values in python data are <0 or >1
+
+
+
+
+### test_compare_pyBBA_to_matBBA
+Tests that BBA values match between `biosnicar` data and the benchmark.
+
+Element-wise comparison between BBAs in equivalent positions in the Matlab benchmark dataset and the newly generated `biosnicar` dataset for the AD solver.
+
+#### Args
+- `get_matlab_data`: matlab-snicar-generated csv file of spectral and broadband albedo
+- `get_python_data`: `biosnicar` generated csv file of spectral and broadband albedo
+- `set_tolerance`: threshold error for BBAs to be considered equal
+
+Returns
+- `None`
+
+#### Raises
+- tests fail if the difference between any pair of BBA values exceeds set_tolerance
+
+
+
+### test_compare_pyBBA_to_matBBA_clean
+
+Tests that BBA values match between `biosnicar` data and the benchmark for clean ice.
+Element-wise comparison between BBAs in equivalent positions in the Matlab benchmark dataset and the newly generated `biosnicar` dataset for the AD solver with no impurities.
+
+#### Args
+- `get_matlab_data`: matlab-snicar-generated csv file of spectral and broadband albedo
+- `get_python_data`: `biosnicar` generated csv file of spectral and broadband albedo
+- `set_tolerance`: threshold error for BBAs to be considered equal
+
+#### Returns
+- `None`
+
+#### Raises
+- tests fail if the difference between any pair of BBA values exceeds set_tolerance
+
+
+
+
+### match_matlab_config
+Ensures model config is equal to the Matlab version used to generate benchmark data.
+This function resets values in instances of Ice, Illumination and ModelConfig to ensure equivalence between `biosnicar` and the Matlab code used to generate the benchmark data.
+Also ensures all vars have correct length, and re-executes the class functions in `Ice` and `Illumination` that update refractive indices and at-surface irradiance.
+
+#### Args
+- `ice`: instance of Ice class
+- `illumination`: instance of Illumination class
+- `rt_config`: instance of RTConfig class
+- `model_config`: instance of ModelConfig class
+
+#### Returns
+- `ice`: updated instance of Ice class
+- `illumination`: updated instance of Illumination class
+- `impurities`: array of instances of Impurity class
+- `rt_config`: updated instance of RTConfig class
+- `model_config`: updated instance of ModelConfig class
+
+
+### test_compare_pyspec_to_matspec_ad
+Tests that spectral albedo values match between `biosnicar` data and the AD benchmark.
+
+Element-wise comparison between spectral albedo in equivalent positions in the Matlab benchmark
+dataset and the newly generated `biosnicar` dataset for the AD solver. Albedo is compared
+wavelength by wavelength for each column in the datasets.
+
+#### Args
+- `get_matlab_data`: matlab-snicar-generated csv file of spectral and broadband albedo
+- `get_python_data`: `biosnicar` generated csv file of spectral and broadband albedo
+- `set_tolerance`: threshold error for BBAs to be considered equal
+
+#### Returns
+- `None`
+
+#### Raises
+- tests fail if the difference between any pair of albedo values exceeds set_tolerance
+
+
+
+
+
+### test_compare_pyspec_to_matspec_clean
+
+Tests that spectral albedo values match between `biosnicar` data and the Toon benchmark.
+
+Element-wise comparison between spectral albedo in equivalent positions in the Matlab benchmark dataset and the newly generated `biosnicar` dataset for the AD solver with no impurities.
+Albedo is compared wavelength by wavelength for each column in the datasets.
+
+#### Args
+- `get_matlab_data_clean`: matlab-snicar-generated csv file of spectral and broadband albedo
+- `get_python_data_clean`: `biosnicar` generated csv file of spectral and broadband albedo
+- `set_tolerance`: threshold error for BBAs to be considered equal
+
+#### Returns
+- `None`
+
+#### Raises
+- tests fail if the difference between any pair of albedo values exceeds set_tolerance
+
+
+### test_plot_random_spectra_pairs
+
+Plots random selection of N spectra pairs and saves to `/tests/test_data`.
+
+#### Args
+- `get_matlab_data`: matlab-generated csv file of spectral and broadband albedo
+- `get_python_data`: python-generated csv file of spectral and broadband albedo
+- `get_n_spectra`: number of pairs of spectral albedo to plot
+
+#### Returns
+
+`None` but saves `py_mat_comparison.png` to `/tests/test_data/`
+
+
+### test_config_fuzzer
+
+Checks model runs correctly with range of input value combinations.
+
+Fuzzer checks that model functions correctly across range of configurations. This fuzzer spoecifically checks rtm config and illumination parameters. The
+range of values is set in the parameterize decorators on this function and can be adjusted to test for specific failures or to increase test coverage. The
+defaults are designed to balance coverage with execution time. This func can be toggled off by setting fuzz to fase in conftest.py
+
+#### Args
+- `dir`: Boolean toggling between direct and diffuse irradiance
+- `aprx`: choice of two-stream approximation
+- `inc`: choice of spectral distribution of incoming irradiance
+- `ref`: chocie of refractive indices (Warren 1984, Warren 2008, Picard 2016)
+- `fuzz`: boolean toggling this fuxxing func on/off
+
+#### Returns
+- `None`
+
+#### Raises
+- tests fail if snicar throws an exception with a particular configuration
+
+
+### test_var_fuzzer
+
+Checks model runs correctly with range of input value combinations.
+
+Fuzzer checks that model functions correctly across range of configurations.
+This fuzzer specifically checks input parameters including ice physical properties. The range of values is set in the parameterize decorators on this function and can
+be adjusted to test for specific failures or to increase test coverage. The defaults are designed to balance coverage with execution time. This func can be
+toggled off by setting `fuzz` to `false` in `conftest.py`
+
+#### Args
+- `rds`: effective grain radius (um) of ice grains (lyr_typ==0) or air bubbles (lyr_typ==1)
+- `rho`: density of ice layer (kg/m3)
+- `zen`: zenith angle of direct beam (degrees from vertical)
+- `cfactor`: concentrating factor used to convert field-measured to modelled LAP concentration
+- `dust`: concentration of mineral dust in each layer of the model (ppb)
+- `algae`: concentration of glacir algae in each layer of the model (ppb)
+
+#### Returns
+- `None`
+
+#### Raises
+- tests fail if snicar throws an exception with a particular configuration
