@@ -1,0 +1,21 @@
+# calculating band ratios
+
+`biosnicar` typically returns spectral albedo for a given input configuration. However, for many applications, especially those related to remote sensing,
+don't actually need full spectral resolution. Instead, they require a few bands that match up with some remote sensor, such as a particular satellite or a drone camera.
+
+A set of simple band ratios come built-in with `biosnicar`. You can execute the following after generating an albedo estimate.
+
+```py
+I2DBA, I3DBA, NDCI, MCI, II = calculate_band_ratios(albedo)
+```
+
+This returns values for the following band ratios:
+
+- `I2DBA`: The 2-band impurity index from [Wang et al. 2018](https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2018GL080455)
+- `I3DBA`: The 3 band impurity index from [Wang et al. 2020](https://tc.copernicus.org/articles/14/2687/2020/)
+- `NDCI`: The normalized difference chlorophyll index from [Mishra and Mishra, 2012](https://www.sciencedirect.com/science/article/abs/pii/S0034425711003737?via%3Dihub)
+- `MCI`: The maximum chlorophyll index from [Binding et al., 2013](https://www.sciencedirect.com/science/article/abs/pii/S0380133013000555?via%3Dihub)
+- `II`: Impurity index from [Dumont et al., 2014](https://doi.org/10.1038/ngeo2180)
+
+
+For serious remote sensing products, there may also need to be some further manipulation of the `biosnicar` output, typically extracting the albedo for a given set of wavelengths and applying the sensor's response function.
