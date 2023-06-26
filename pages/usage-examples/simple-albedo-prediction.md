@@ -66,3 +66,7 @@ You could save this as `example.py`, save it in `src/biosnicar` and run from the
 ```sh
 python src/biosnicar/example.py
 ```
+
+## Why not just have one function?
+
+It has been asked in the past why it is necessary to run multiple functions in sequence just to get an albedo value, rather than just wrapping all the logic in a single `get_albedo()` function. It might be a nice feature to eventually add a wrapper around all the above functions so that albedo can be generated in a single function call. However, at the moment we feel it is overall beneficial to have the logic separated with one outcome per function. This is to make it as easy as possible to split up the logic and use `biosnicar` in creative ways. For example, to extract intermediate values (say, the ice optical properties) it is a simple case of using the values returned from `get_layer_OPs()` or `mix_in_impurities()` rather than having to modify some monolithic codebase and worry about unintended side-effects.
