@@ -1,11 +1,12 @@
 # calculating band ratios
 
-`biosnicar` typically returns spectral albedo for a given input configuration. However, for many applications, especially those related to remote sensing,
-don't actually need full spectral resolution. Instead, they require a few bands that match up with some remote sensor, such as a particular satellite or a drone camera.
+`biosnicar` typically returns spectral albedo for a given input configuration. 
+However, for many applications, especially those related to remote sensing, don't actually need full spectral resolution. 
+Instead, they require a few bands that match up with some remote sensor, such as a particular satellite or a drone camera.
 
-A set of simple band ratios come built-in with `biosnicar`. You can execute the following after generating an albedo estimate.
+A set of simple band ratios come built-in with `biosnicar`. You can execute the following after generating an albedo estimate:
 
-```py
+```py3
 I2DBA, I3DBA, NDCI, MCI, II = calculate_band_ratios(albedo)
 ```
 
