@@ -1,0 +1,29 @@
+# biosnicar app
+
+You can access the `biosnicar` app at [https://bit/ly/biosnicar](https://bit/ly/biosnicar).
+
+## Using the App
+
+The app is designed to make using `biosnicar` as easy as possible. You do not have to interact with any code - you can just set the values you want to use in the browser and the model will
+automatically update on the screen. You can download the data any time by clicking `Download data`.
+
+![biosnicar app](/../assets/app.png)
+
+## How the app works
+
+`biosnicar` is a Streamlit app, which means the entire stack, from the model right through to the front end is all written in Python. 
+You can find the app's source code in the `biosnicar` [Github repository](https://github.com/jmcook1186/biosnicar-py/tree/master/app/streamlit) in `/app/streamlit`.
+The biosnicar model is run any time an input field is changed, and the spectral albedo data automatically updates.
+
+The options offered in the app are intentionally minimal. If you want to access the full `biosnicar` functionality you should download and run the model code. 
+The app is designed to give users access to `biosnicar` fundamentals quickly and easily, without having to handle any code.
+
+## Updating the app
+
+You can add and remove functions by modifying the app source code and running locally, by running the following command in your terminal (from the project directory):
+
+```sh
+./start_app.sh
+```
+
+If your changes would be useful to other users, you can raise a pull request to make them part of the online app!
