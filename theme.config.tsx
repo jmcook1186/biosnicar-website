@@ -6,7 +6,7 @@ const config: DocsThemeConfig = {
   project: {
     link: 'https://github.com/jmcook1186/biosnicar-py',
   },
-  docsRepositoryBase: 'https://github.com/jmcook1186/biosnicar-website',
+  docsRepositoryBase: 'https://github.com/jmcook1186/biosnicar-website/tree/main',
   footer: {
     text: 'Nextra Docs Template',
   },
