@@ -25,7 +25,7 @@ This requires the "remote containers" extension to be added to VSCode. Further i
 
 The model driver and all the core source code can be found in `/src/biosnicar`. From the top level directory (`~/BioSNICAR_GO_PY`), run:
 
-`python ./src/biosnicar/snicar_driver.py`
+`python ./src/biosnicar/main.py`
 
 This will run the model with all the default settings. The user will see a list of output values printed to the console and a spectral albedo plot appear in a separate window. The code can also be run in an interactive session (Jupyter/iPython) in which case the relevant data and figure will appear in the interactive console.
 
@@ -37,5 +37,6 @@ More complex applications of the model code, for example model inversions, field
 ## Choosing Inputs
 
 It is straightforward to adjust the model configuration by updating the values in `inputs.yaml`. 
+
 However there is a lot of nuance to setting up the model to provide realistic simulations, and the meaning of the various parameters is not always obvious. 
 For now, you can refer to the reference documentation on this site in the `modules` section. However, we are developing a guide for choosing inputs that will be shipped soon!

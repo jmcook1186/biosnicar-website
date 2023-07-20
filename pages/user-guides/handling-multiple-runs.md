@@ -1,6 +1,6 @@
 # Handling multiple runs
 
-The default `snicar_driver.py` produces a single spectral albedo prediction for a given set of input parameters. However, many users will want to run `biosnicar` many times with lots of different input values. perhaps to test the sensitivity of the mdoel to different combinations of factors, or to create lookup tables.
+The default `main.py` produces a single spectral albedo prediction for a given set of input parameters. However, many users will want to run `biosnicar` many times with lots of different input values. perhaps to test the sensitivity of the mdoel to different combinations of factors, or to create lookup tables.
 
 This is straightforward to do with `biosnicar` but it requires creating a new script for calling the `biosnicar` functions. The main concept to understand is that `setup_snicar()` is called once to instantiate all the necessary classes, then their associated values can be updated in each iteration of the code and used for the next simulation. 
 
@@ -26,13 +26,6 @@ from setup_snicar import setup_snicar
 from toon_rt_solver import toon_solver
 from validate_inputs import validate_inputs
 
-BIOSNICAR_SRC_PATH = Path(__file__).resolve().parent
-
-
-# define input file
-input_file = BIOSNICAR_SRC_PATH.joinpath("inputs.yaml").as_posix()
-
-
 # run setup_snicar() to establish base-case values for ALL necessary params
 (
     ice,
@@ -41,7 +34,7 @@ input_file = BIOSNICAR_SRC_PATH.joinpath("inputs.yaml").as_posix()
     model_config,
     plot_config,
     impurities,
-) = setup_snicar(input_file)
+) = setup_snicar()
 
 # now define the range of values you actually want to iterate over
 lyrList = [0, 1]
@@ -68,7 +61,6 @@ ncols = (
 )
 
 specOut = np.zeros(shape=(ncols, 481))
-
 
 # iterate over all your values
 counter = 0
@@ -131,9 +123,6 @@ If you are a linux user you can check your `dask` distributed `biosnicar` runs a
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# save this alongside snicar-driver.py and run in the terminal using
-# `python src/biosnicar/biosnicar-distributed.py`
-
 import numpy as np
 from pathlib import Path
 import dask
@@ -186,7 +175,7 @@ if __name__ == "__main__":
             model_config,
             plot_config,
             impurities,
-        ) = setup_snicar(input_file)
+        ) = setup_snicar()
 
         ice.dz = dz
         ice.nbr_lyr = 2

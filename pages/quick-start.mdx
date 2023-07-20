@@ -15,7 +15,6 @@ This is the simplest way to use `biosnicar`. You can set your input configuratio
 There are some restrictions on the parameter values and the set of available parameters in the web application. For complete control over the model configuration you can download and run the model yourself.
 
 
-
 ## Python code
 
 ### Installing Environment/Dependencies
@@ -26,6 +25,13 @@ It is recommended to use a fresh environment using conda or venv. Once activated
 ```sh
 pip install -r requirements.txt
 ```
+
+Then install biosnicar using:
+
+```sh
+pip install -e .
+```
+
 Finally, if you do not wish to install anything on your computer, but you use VSCode and Docker, then you can use the devcontainer config provided to run this code in a remote container. This requires the “remote containers” extension to be added to VSCode. Further instructions are available here: https://code.visualstudio.com/docs/remote/containers
 
 ### Running the model
@@ -33,7 +39,7 @@ Finally, if you do not wish to install anything on your computer, but you use VS
 The model driver and all the core source code can be found in `/src`. From the top level directory (`~/`biosnicar_py`), run:
 
 ```sh
-python ./src/snicar_driver.py
+python ./src/main.py
 ```
 
 This will run the model with all the default settings. 
@@ -58,14 +64,13 @@ The object oriented approach is preferred because it is more Pythonic, more flex
 It is straightforward to adjust the model configuration by updating the values in `inputs.yaml`. However there is a lot of nuance to setting up the model to provide realistic simulations, and the meaning of the various parameters is not always obvious. 
 We will have a guide on this topic coming soon!
 
-Please note that you can have multiple input files, even saved in an external directory with specific configurations and then loop through them in snicar driver. 
+Please note that you can have multiple input files, even saved in an external directory with specific configurations and then loop through them in `main.py`. 
 For example, you may wish to conduct an experiment with 10 different model configurations - in this case you could have ten `inputsX.yaml` files in an external directory. 
-Then execute all the functions inside the default `snicar_driver.py` in a simple for loop, assigning each file to input_files in turn. 
+Then execute all the functions inside the default `main.py` in a simple for loop, assigning each file to input_files in turn. 
 This is good for reproducibility as those config files can be archived.
 
 ### Bio-optical model
 
 The bio-optical model is generally run separately to the main model code because most users use the default optical properties provided in the downloaded repository. 
-However, some users may wish to generate new files. To do this, simply call `run_biooptical_model()` in the driver script after updating the biooptical section of `inputs.yaml`. 
-We have included the function call in the template driver script but left it commented out as we expect it to be rarely used. 
-More details are provided in the `biosnicar` Functions section of these docs.
+However, some users may wish to generate new files. To do this, simply call `run_biooptical_model()` in `main.py` after updating the biooptical section of `inputs.yaml`. 
+We expect the bio-optical model to be used rarely. 

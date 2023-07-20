@@ -3,7 +3,7 @@
 Here the ice/impurity optical properties and illumination conditions are used to calculate energy fluxes between the ice, atmosphere and
 underlying substrate.
 
-Typically this function would be called from `snicar_driver()` because it takes as inputs intermediates that are calculated elsewhere.
+Typically this function would be called from `main.py` because it takes as inputs intermediates that are calculated elsewhere.
 Specifically, the functions `setup_snicar()`, `get_layer_OPs()` and `mix_in_impurities()` are called to generate `tau`, `ssa`, `g` and `L_snw`,
 which are then passed as inputs to `adding_doubling_solver()`.
 
