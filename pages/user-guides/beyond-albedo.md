@@ -23,12 +23,12 @@ It is also possible to extend the scope of `Outputs` to include some more values
 
 Here's how you would update `get_albedo` to return all the outputs:
 
-```python3
+```py
 # ORIGINAL
   ...
     display_out_data(outputs)
     return outputs.albedo
-
+ 
 # UPDATED
   ...
     display_out_data(outputs)
@@ -37,7 +37,7 @@ Here's how you would update `get_albedo` to return all the outputs:
 
 And then you could access each output value as follows:
 
-```python3
+```py
 outputs = get_albedo("adding-doubling", plot=False, validate-True)
 print(outputs.albedo) # print the albedo
 print(outputs.BBA) # print the broadband albedo
@@ -47,7 +47,7 @@ print(outputs.BBA) # print the broadband albedo
 
 Here's how you can run the functions individually, without using the `get_albedo()` wrapper:
 
-```python3
+```py
 from pathlib import Path
 from biosnicar.adding_doubling_solver import adding_doubling_solver
 from biosnicar.column_OPs import get_layer_OPs, mix_in_impurities
