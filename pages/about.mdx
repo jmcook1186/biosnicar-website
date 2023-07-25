@@ -20,37 +20,40 @@ Note that running the model with spherical grains, the Toon solver and no biolog
 
 #### Light absorbing particles
 
-BioSNICAR includes a fairly large library of light absorbing particles that can be incorporated easily into albedo simulations. These built-in impurities include a wide range of biotic and abotic particles whose optical properties were empirically measured and published in the scientific literature.
-The BioSNICAR repository also includes a separate module for calculating the relevant optical properties for any particle, so that you can create your own particle types.
-This `BioOptical` module includes a model that calculates the single-scattering optical properties of pigmented algae. 
-Two options are available: spherical cells as per ice grains using Mie theory, typically used for snow algae, and circular based cylinders using geometric optics typically used for glacier algae that are long chains of cells approximated as cylinders after Lee and Pilon, 2013. 
+`biosnicar` includes a fairly large library of light absorbing particles that can be incorporated easily into albedo simulations. These built-in impurities include a wide range of biotic and abotic particles whose optical properties were empirically measured and published in the scientific literature.
+The `biosnicar` repository also includes a separate module for calculating the relevant optical properties for any particle, so that you can create your own particle types.
+
+The impurity library that comes with `biosnicar` prioritizes those with empirically-measured optical properties, or impurities whose optical properties are available in the science literature.
+
+However, we also provide a `bio-optical` module that includes a model to calculate the single-scattering optical properties of pigmented algae, given user defined shape and pigment concentrations.
+Two options for impurity optical property calculations are available: spherical cells as per ice grains using Mie theory, typically used for snow algae, and circular based cylinders using geometric optics typically used for glacier algae that are long chains of cells approximated as cylinders after Lee and Pilon, 2013. 
 The user needs to feed the bio-optical model with the refractive index and absorption cross section of the cell, along with algae dry and wet density and cell size. 
 The absorption cross section can be calculated in the model from intracellular pigment concentrations (Cook et al. 2017; pigment absorption coefficients from Bidigare 1990, Halbach 2022, Clementson and Wojtasiewicz 2019)) or loaded directly if they have been measured empirically for real cells. 
-The model saves the relevant data in file that can be loaded into BioSNICAR.
+The model saves the relevant data in file that can be loaded into `biosnicar`.
 As well as cells, colored dissolved organic matter (CDOM) on snow/ice optical properties can be incorporated in the model too, using absorption data from Halbach et al (2022).
 
-#### BioSNICAR history
+#### `biosnicar` history
 
-BioSNICAR began as a straightforward translation of the original SNICAR code (Flanner et al. 2009) into Python. 
+`biosnicar` began as a straightforward translation of the original SNICAR code (Flanner et al. 2009) into Python. 
 The motivation was to ensure access to the SNICAR model code in an open source language that didn't require a proprietary license, and also add some new impurity types. 
-In the first version of BioSNICAR, the impurity optical properties were theoretical, based upon a pigment mixing model and values for the mass absorption coefficient of each pigment from the marine phytoplankton literature. 
+In the first version of `biosnicar`, the impurity optical properties were theoretical, based upon a pigment mixing model and values for the mass absorption coefficient of each pigment from the marine phytoplankton literature. 
 The snow and ice optical properties were based on Mie theory assuming all grains to be relatively small and spherical. The next iteration of the model added support for large grains whose optical properties were calculated using geometric optics instead of Mie theory. 
 The rationale was that this would be better for simulating the large blocky pieces of ice observed in the porous "weathering crust" on the Greenland Ice Sheet and elsewhere. However, it was later discovered that the most accurate way to simulate the weathered crust was by representing them as solid ice slabs and using an adding-doubling solver (After Whicker et al 2022). 
 This was added as a third option to the model in 2022. Soon after, empirical values for glacier algae optical properties were measured by Chevrollier et al (2022) and incorporated into the mdoel in place of the original "theoretical" values. 
-BioSNICAR v2 finally shipped after a complete refactor of the code base, deprecating the old model structure inhertied from the Matlab code and rewriting it in an object-oriented style that made the model more flexible and easier to use. 
-Finally, to make BioSNICAR accessible to non-coders, a web application was shipped in 2022 that allows users to generate albedo spectra in the browser. 
+`biosnicar` v2 finally shipped after a complete refactor of the code base, deprecating the old model structure inhertied from the Matlab code and rewriting it in an object-oriented style that made the model more flexible and easier to use. 
+Finally, to make `biosnicar` accessible to non-coders, a web application was shipped in 2022 that allows users to generate albedo spectra in the browser. 
 
-#### What is BioSNICAR used for?
+#### What is `biosnicar` used for?
 
-BioSNICAR is primarily used to predict the spectral and broadband albedo of snow and ice surfaces with specific configurations of ice and particle optical properties and spatial organization and illumination conditions. 
-Researchers interested in the effect of certain particles on snow melt could, for example, simulate deposition events in BioSNICAR and determine the sensitivity of snow and ice to those particles. 
-The original use-case for BioSNICAR was to do this kind of simulation to determine the impact of snow and glacier algae on melt rates.
+`biosnicar` is primarily used to predict the spectral and broadband albedo of snow and ice surfaces with specific configurations of ice and particle optical properties and spatial organization and illumination conditions. 
+Researchers interested in the effect of certain particles on snow melt could, for example, simulate deposition events in `biosnicar` and determine the sensitivity of snow and ice to those particles. 
+The original use-case for `biosnicar` was to do this kind of simulation to determine the impact of snow and glacier algae on melt rates.
 
-However, BioSNICAR has also been used in other ways. Running BioSNICAR in the default way gives a single albedo spectrum for a given input configuration, but BioSNICAR is also highly parallelizable, making it possible to quickly do thousands of simulations. 
-This is useful for remote sensing applications where large numbers of BioSNICAR spectra can be organized into a look-up table for classifying ice surfaces from satellite data, or quantifying particles on the surface.
+However, `biosnicar` has also been used in other ways. Running `biosnicar` in the default way gives a single albedo spectrum for a given input configuration, but `biosnicar` is also highly parallelizable, making it possible to quickly do thousands of simulations. 
+This is useful for remote sensing applications where large numbers of `biosnicar` spectra can be organized into a look-up table for classifying ice surfaces from satellite data, or quantifying particles on the surface.
 
 The model can also be inverted, so that instead of answering the question "what is the albedo with these input values?" you can ask "what input values lead to this albedo?" This is a powerful way to *explain* observations made in the field or by remote sensing.
 
-It is also possible to output data other than albedo from the model. For example, BioSNICAR can be used to model actinic fluxes and absorbed energy with depth in a snowpack or ice column. There are many parameters that can be output from the model that users can explore.
+It is also possible to output data other than albedo from the model. For example, `biosnicar` can be used to model actinic fluxes and absorbed energy with depth in a snowpack or ice column. There are many parameters that can be output from the model that users can explore.
 
-The `usage-examples` directory shows how BioSNICAR can be used in these non-standard ways. There are many other potential uses for the BioSNICAR code base, we would love to see more creative applications!
+The `user guides` directory shows how `biosnicar` can be used in these non-standard ways. There are many other potential uses for the `biosnicar` code base, we would love to see more creative applications!
