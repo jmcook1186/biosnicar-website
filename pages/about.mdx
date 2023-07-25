@@ -1,9 +1,10 @@
-## About BioSNICAR
+## About biosnicar
 
-### What is BioSNICAR?
+### What is `biosnicar`?
 
-A detailed description of the theory on which the model is based can be found in Flanner et al. 2021. 
-Briefly, the spectral albedo is computed from the single scattering  properties of snow/ice and the light absorbing particulates (LAPs), along with the concentrations of LAPs and the physical properties of snow/ice (density, grain/pore size). These can vary in each layer, allowing for representation of e.g. porous weathered crust above unweathered ice with an uppermost mm of liquid water containing algae, or deep layers of ancient dust. Below are detailed the different options to calculate the single scattering properties.
+`biosnicar` is a model, written in Python, for predicting the spectralalbedo of snow and ice. The model is broken down into vertical layers, each of which can have different physical properties and impurity concentrations. Given the illumination conditions, `biosnicar` can calculate the spectral albedo. 
+`biosnicar` is available as Python code, or it can be run in a web browser using our [app](https://bit.ly/biosnicar). We have designed `biosnicar` to be as flexible, offering multiple options for the radiative transfer solver used, a library of ice refractive indices, illumination profiles and impurity types.
+We have also made the code as modular and composable as possible so that advanced users can be creative in building `biosnicar` applications!
 
 ### Theoretical Background
 
