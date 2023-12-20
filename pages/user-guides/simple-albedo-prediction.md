@@ -5,7 +5,7 @@ The main use case for `biosnicar` is to predict the albedo of a snow and/or ice 
 When you download `biosnicar` it is all set up for this use case. You can simply run the following command from your terminal to generate a spectral albedo with all the default settings:
 
 ```sh
-python src/biosnicar/main.py
+python main.py
 ```
 
 Once you have tried this and seen `biosnicar` work, you can start creating your own configurations and simulating specific environments. All the values you might want to change are set in a single file: `inputs.yaml`.
@@ -57,10 +57,10 @@ outputs1 = adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_c
 plot_albedo(plot_config, model_config, outputs1.albedo)
 ```
 
-You could save this as `example.py`, save it in `src/biosnicar` and run from the project directory using:
+You could save this as `example.py`, save it in the project directory and run using:
 
 ```sh
-python src/biosnicar/example.py
+python example.py
 ```
 
 Using this sequence of function calls instead of the `get_albedo()` wrapper gives you access to the return values of all the intermediate functions, such as the physical and optical properties of the ice column. You also get the full set of output values so you can decide what to plot, download or pass into some new logic you create for yourself!

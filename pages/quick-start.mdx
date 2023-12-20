@@ -14,12 +14,15 @@ This is the simplest way to use `biosnicar`. You can set your input configuratio
 
 There are some restrictions on the parameter values and the set of available parameters in the web application. For complete control over the model configuration you can download and run the model yourself.
 
+You can also run the app locally. Simply download the `biosnicar` repository, install using `pip install -e .` and then run `./start_app.py`. The app will run at `localhost:8501`.
+
+
 
 ## Python code
 
 ### Installing Environment/Dependencies
 
-If you want to run `biosnicar` in a local Python environment but do not have Python installed, download Python >3.6. 
+If you want to run `biosnicar` in a local Python environment but do not have Python installed, download Python >3.7. 
 It is recommended to use a fresh environment using conda or venv. Once activated, install the project dependencies with:
 
 ```sh
@@ -36,10 +39,10 @@ Finally, if you do not wish to install anything on your computer, but you use VS
 
 ### Running the model
 
-The model driver and all the core source code can be found in `/src`. From the top level directory (`~/`biosnicar_py`), run:
+The model driver (main.py) is in the root repository and all the core source code can be found in `/biosnicar`. From the top level directory (`~/`biosnicar_py`), run:
 
 ```sh
-python src/main.py
+python main.py
 ```
 
 This will run the model with all the default settings. 

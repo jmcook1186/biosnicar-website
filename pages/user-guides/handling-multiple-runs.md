@@ -12,19 +12,19 @@ The code snippet below shows how to build a script for iteratign over many input
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# save this file to the top level biosnicar_py directory, then run from the command line
+# save this file to the top level directory, then run from the command line
 # as follows:
-# python src/biosnicar/biosnicar_iterator.py
+# python biosnicar_iterator.py
 
 import numpy as np
 from pathlib import Path
 
-from adding_doubling_solver import adding_doubling_solver
-from column_OPs import get_layer_OPs, mix_in_impurities
-from display import display_out_data, plot_albedo
-from setup_snicar import setup_snicar
-from toon_rt_solver import toon_solver
-from validate_inputs import validate_inputs
+from biosnicar.adding_doubling_solver import adding_doubling_solver
+from biosnicar.column_OPs import get_layer_OPs, mix_in_impurities
+from biosnicar.display import display_out_data, plot_albedo
+from biosnicar.setup_snicar import setup_snicar
+from biosnicar.toon_rt_solver import toon_solver
+from biosnicar.validate_inputs import validate_inputs
 
 # run setup_snicar() to establish base-case values for ALL necessary params
 (
