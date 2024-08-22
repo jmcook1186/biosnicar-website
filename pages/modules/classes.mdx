@@ -1,6 +1,6 @@
 # biosnicar Classes
 
-This page contains definitions for all the classes used in BioSNICAR, including:
+This page contains definitions for all the classes used in biosnicar, including:
 
 - `Impurity`
 - `Ice`
@@ -25,7 +25,6 @@ Instances of Impurity are one discrete type of light absorbing impurity with a d
 ### Attributes
 
 - `name`: name of impurity
-- `cfactor`: concentration factor used to convert field measurements to model config (default=1)
 - `unit`: the unit the concentration should be represented in (0 = ppb, 1 = cells/mL)
 - `conc`: concentration of the impurity in each layer (in units of self.unit)
 - `file`: name of netCDF file containing optical properties and size distribution
@@ -133,7 +132,8 @@ Model configuration.
 - `hex_ice_path`: directory containing OPs for hexagonal ice grains
 - `bubbly_ice_path`: directory containing OPs for bubbly ice
 - `ri_ice_path`: path to file containing pure ice refractive index
-- `op_dir_stubs`: sstring stubs for ice optical property files
+- `op_dir_stubs`: string stubs for ice optical property files
+- `illumination_file_stubs`: string stubs for irradiance optical property files
 - `wavelengths`: array of wavelengths in nm (default 0.205 - 4.995 um)
 - `nbr_wvl`: number of wavelengths (default 480)
 - `vis_max_idx`: index for upper visible wavelength (default 0.75 um)
