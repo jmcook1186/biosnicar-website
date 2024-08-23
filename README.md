@@ -1,6 +1,5 @@
-# BioSNICAR documentation
+# biosnicar documentation
 
-This is a docs site bootstrapped usign Nextra. It is in development and not yet deployed.
 
 ## Local Development
 

@@ -6,7 +6,7 @@ This is straightforward to do with `biosnicar` but it requires creating a new sc
 
 There is one gotcha that users must be aware of when iterating over many `biosnicar` runs. This is the need to re-execute some class functions if certain fields in the `Ice` or `Illumination` instances are changed. Specifically, these classes have associated functions that calculate the refractive index from the ice optical properties and the irradiance from the solar zenith angle and illumination profile. This means that after updating values in any field in these classes, it is necessary to execute the `ice.calculate_refractive_index(input_file)` and/or `illumination.calculate_irradiance()` functions. This is not necessary for single runs because the functions are invoked when the class is first instantiated.
 
-The code snippet below shows how to build a script for iteratign over many input configurations. The runs are all run in serial, meaning there is no acceleration by spreading the runs across multiple processors. To see how to accelerate the code, skip to the section on `distributing biosnicar runs`.
+The code snippet below shows how to build a script for iterating over many input configurations. The runs are all run in serial, meaning there is no acceleration by spreading the runs across multiple processors. To see how to accelerate the code, skip to the section on `distributing biosnicar runs`.
 
 ```py
 #!/usr/bin/env python3
@@ -107,7 +107,7 @@ for layer_type in lyrList:
                         counter += 1
 
 # save to file
-np.savetxt("/home/joe/Desktop/py_benchmark_data.csv", specOut, delimiter=",")
+np.savetxt("biosnicar_multiple_runs.csv", specOut, delimiter=",")
 ```
 
 

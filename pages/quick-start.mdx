@@ -8,34 +8,33 @@ Here you will find instructions for getting up and running with biosnicar, eithe
 
 [https://bit.ly/bio-snicar](https://bit.ly/bio-snicar)
 
-This is the simplest way to use `biosnicar`. You can set your input configuration in the labelled fields on the left hand side of the screen and the plot in the centre of the screen will automatically update, providing the spectral albedo. You can also download the spectral albedo data as a csv file by clicking Download Data.
+If you want to use `biosnicar` with a basic configuration, this is the simplest way. You can set your input configuration in the labelled fields on the left hand side of the screen and the plot in the centre of the screen will automatically update, providing the spectral albedo. You can also download the spectral albedo data as a csv file by clicking `Download Data`. 
 
 ![](/static/app.png)
 
-There are some restrictions on the parameter values and the set of available parameters in the web application. For complete control over the model configuration you can download and run the model yourself.
+There are some restrictions on the parameter values and the set of available parameters in the web application. For example, the multilayer scheme is not available and only three different impurities are included. For complete control over the model configuration you can download and run the model yourself.
 
 You can also run the app locally. Simply download the `biosnicar` repository, install using `pip install -e .` and then run `./start_app.py`. The app will run at `localhost:8501`.
-
 
 
 ## Python code
 
 ### Installing Environment/Dependencies
 
-If you want to run `biosnicar` in a local Python environment but do not have Python installed, download Python >3.7. 
-It is recommended to use a fresh environment using conda or venv. Once activated, install the project dependencies with:
+If you want to run `biosnicar` in a local Python environment but you do not have Python installed, download Python >3.7. 
+It is recommended to create a fresh environment using conda or venv specific to `biosnicar`. Once activated, install the project dependencies with:
 
 ```sh
 pip install -r requirements.txt
 ```
 
-Then install biosnicar using:
+The previous command may take an unreasonable amount of time to complete with anaconda. If that is the case, you can simply open the `requirements.txt` file and pip install each dependency in the fresh environment. Then, install `biosnicar` using:
 
 ```sh
 pip install -e .
 ```
 
-Finally, if you do not wish to install anything on your computer, but you use VSCode and Docker, then you can use the devcontainer config provided to run this code in a remote container. This requires the “remote containers” extension to be added to VSCode. Further instructions are available here: https://code.visualstudio.com/docs/remote/containers
+Finally, if you do not wish to install anything on your computer, but you use VSCode and Docker, then you can use the devcontainer config provided to run this code in a remote container. This requires the “remote containers” extension to be added to VSCode. Further instructions are available here: https://code.visualstudio.com/docs/remote/containers.
 
 ### Running the model
 
@@ -45,17 +44,17 @@ The model driver (main.py) is in the root repository and all the core source cod
 python main.py
 ```
 
-This will run the model with all the default settings. 
+This command will run the model with all the default settings from the config file `inputs.yaml` file. 
 The user will see a list of output values printed to the console and a spectral albedo plot appear in a separate window. 
-The code can also be run in an interactive session (Jupyter/iPython) in which case the relevant data and figure will appear in the interactive console.
+The code can also be run in an interactive session (Jupyter/iPython) in which case the relevant data and figure will appear in the interactive console, as well as in the command line outside of the top level directory, as long as the path to main.py is adjusted.
 
 Most users will want to experiment with changing input parameters. 
 This is achieved by adjusting the values in the config file `inputs.yaml`. 
-The nature of each parameter is described in in-line annotations to guide the user. 
+The nature of each parameter is described in in-line annotations to guide the user, and detailed in the [Inputs](inputs) page. 
 Invalid combinations of values will be rejected by our error-checking code. 
-Most users should have no reason to modify any other file in this repository except for the those in `inputs.yaml`.
+Most users should have no reason to modify any other file in this repository except for those in `inputs.yaml`.
 
-More complex applications of the model code, for example model inversions, field/model comparisons etc are included under `/experiments`, with details provided in that module’s own README.
+More complex applications of the model code, for example model inversions, field/model comparisons etc are presented in the [User guides](user-guides) menu.
 
 We have also maintained a separate version of the `biosnicar` codebase that uses a “functional” progamming style rather than the object-oriented approach taken here. 
 We refer to this as `biosnicar` Classic and it is available in the classic branch of this repository. It might be useful for people already familiar with FORTRAN or Matblab implementations from previous literature. 
