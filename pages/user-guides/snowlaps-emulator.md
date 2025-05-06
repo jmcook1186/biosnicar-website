@@ -66,4 +66,4 @@ Example scripts are provided in the snowlaps/examples directory, including:
 
 If you use snowlaps in your research, please cite:
 
-Chevrollier, L.-A., Wehrlé, A., Cook, J. M., Pirk, N., Benning, L. G., Anesio, A. M., and Tranter, M.: Separating the albedo reducing effect of different light absorbing particles on snow using deep learning, EGUsphere [preprint], https://doi.org/10.5194/egusphere-2024-2583, 2024.
+Chevrollier, L.A., Wehrlé, A., Cook, J. M., Pirk, N., Benning, L. G., Anesio, A. M., and Tranter, M.: Separating the albedo reducing effect of different light absorbing particles on snow using deep learning, EGUsphere [preprint], https://doi.org/10.5194/egusphere-2024-2583, 2024.
