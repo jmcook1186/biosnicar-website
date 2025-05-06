@@ -1,17 +1,17 @@
 # Running the model
 
-To run the `biosnicar` model, you need to have Python installed on your machine. Then, you can download the mdoel code from the [Github repository](https://github.com/jmcook1186/biosnicar-py/tree/master).
-Then, you can install the project dependencies and start using `biosnicar`!
+To run the `biosnicar` model, you need to have installed on your machine. Then, you can download the model code from the [Github repository](https://github.com/jmcook1186/biosnicar-py/tree/master).
+Finally, you can install the project dependencies and start using `biosnicar`!
 
 ## Installing Environment/Dependencies
 
-If you do not have Python installed, download Python >3.8. It is recommended to use a fresh environment using conda or venv. Once activated, install the project dependencies with:
+If you do not have Python installed, download Python >3.7. It is recommended to use a fresh environment using conda or venv. Once activated, install the project dependencies with:
 
 ```sh
 pip install -r requirements.txt
 ```
 
-Now install `biosnicar`:
+The previous command may take an unreasonable amount of time to complete with anaconda. If that is the case, you can simply open the `requirements.txt` file and pip install each dependency in the fresh environment. Then, install `biosnicar`:
 
 ```sh
 pip install -e .
@@ -27,11 +27,11 @@ The model driver (`main.py`) is in the root repository and all the core source c
 
 `python main.py`
 
-This will run the model with all the default settings. The user will see a list of output values printed to the console and a spectral albedo plot appear in a separate window. The code can also be run in an interactive session (Jupyter/iPython) in which case the relevant data and figure will appear in the interactive console.
+This will run the model with all the default settings. The user will see a list of output values printed to the console and a spectral albedo plot appear in a separate window. The code can also be run in an interactive session (Jupyter/iPython) in which case the relevant data and figure will appear in the interactive console, as well as in the command line outside of the top level directory, as long as the path to main.py is adjusted.
 
 Most users will want to experiment with changing input parameters. This is achieved by adjusting the values in the config file `inputs.yaml`. The nature of each parameter is described in in-line annotations to guide the user. Invalid combinations of values will be rejected by our error-checking code. Most users should have no reason to modify any other file in this repository except for the those in `inputs.yaml`.
 
-More complex applications of the model code, for example model inversions, field/model comparisons etc are all possible, with details provided in these docs under `Usage examples`.
+More complex applications of the model code, for example model inversions, field/model comparisons etc are all possible, with details provided in these docs under `Usage Guides`.
 
 
 ## Choosing Inputs
@@ -39,4 +39,4 @@ More complex applications of the model code, for example model inversions, field
 It is straightforward to adjust the model configuration by updating the values in `inputs.yaml`. 
 
 However there is a lot of nuance to setting up the model to provide realistic simulations, and the meaning of the various parameters is not always obvious. 
-For now, you can refer to the reference documentation on this site in the `modules` section. However, we are developing a guide for choosing inputs that will be shipped soon!
+However, we are developing a guide for choosing inputs that will be shipped soon!
