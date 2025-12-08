@@ -1,0 +1,15 @@
+export default {
+  index: "Welcome",
+  "quick-start": "Quick start",
+  fundamentals: "Fundamentals",
+  modules: "Modules",
+  "user-guides": "User Guides",
+  about: {
+    title: "About",
+    type: "page"
+  },
+  contributing: {
+    title: "Contributing",
+    type: "page"
+  }
+}

@@ -8,7 +8,7 @@ const config: DocsThemeConfig = {
   },
   docsRepositoryBase: 'https://github.com/jmcook1186/biosnicar-website/tree/main',
   footer: {
-    text: 'Nextra Docs Template',
+    content: 'Nextra Docs Template',
   }
 }
 
