@@ -48,13 +48,10 @@ print(outputs.BBA) # print the broadband albedo
 Here's how you can run the functions individually, without using the `get_albedo()` wrapper:
 
 ```py
-from pathlib import Path
-from biosnicar.adding_doubling_solver import adding_doubling_solver
-from biosnicar.column_OPs import get_layer_OPs, mix_in_impurities
-from biosnicar.display import display_out_data, plot_albedo
-from biosnicar.setup_snicar import setup_snicar
-from biosnicar.toon_rt_solver import toon_solver
-from biosnicar.validate_inputs import validate_inputs
+from biosnicar.rt_solvers.adding_doubling_solver import adding_doubling_solver
+from biosnicar.optical_properties.column_OPs import get_layer_OPs, mix_in_impurities
+from biosnicar.utils.display import display_out_data, plot_albedo
+from biosnicar.drivers.setup_snicar import setup_snicar
 
 (
     ice,
@@ -63,7 +60,7 @@ from biosnicar.validate_inputs import validate_inputs
     model_config,
     plot_config,
     impurities,
-) = setup_snicar()
+) = setup_snicar("default")
 
 # now get the optical properties of the ice column
 ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, model_config)

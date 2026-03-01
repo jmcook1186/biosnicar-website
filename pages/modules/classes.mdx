@@ -27,8 +27,7 @@ Instances of Impurity are one discrete type of light absorbing impurity with a d
 - `name`: name of impurity
 - `unit`: the unit the concentration should be represented in (0 = ppb, 1 = cells/mL)
 - `conc`: concentration of the impurity in each layer (in units of self.unit)
-- `file`: name of netCDF file containing optical properties and size distribution
-- `impurity_properties`: instance of opened file self.file
+- `file`: name used to look up optical properties from the consolidated `lap.npz` archive (the filename stem is used as a key prefix)
 - `mac`: mass absorption coefficient (m2/kg or m2/cell)
 - `ssa`: single scattering albedo
 - `g`: asymmetry parameter
@@ -212,8 +211,7 @@ Configuration class for bio-optical model.
 - `smooth`: (boolean) if True,  apply optional smoothing filter
 - `window_size`: (int) size of window of smoothing filter (dflt value: 25)
 - `poly_order: (int) polynomial order of smoothing filter (dflt value: 3)
-- `save_netcdf`: (boolean) if True, saves data in a netcdf file
-- `savepath_netcdf`: (string) save path directory
-- `filename_netcdf`: (string) name of the file containing the optical properties
-- `information`: (string) containing any additional info for metadata in netcdf (e.g. 'Glacier algae OPs derived from GO calculations with empirical abs_cff')
+- `save_to_lap`: (boolean) if True, saves data into the consolidated `lap.npz` archive
+- `impurity_stem`: (string) stem name used as key prefix in `lap.npz`
+- `info`: (string) containing any additional metadata (e.g. 'Glacier algae OPs derived from GO calculations with empirical abs_cff')
 

@@ -1,8 +1,32 @@
 # Handling multiple runs
 
-The default `main.py` produces a single spectral albedo prediction for a given set of input parameters. However, many users will want to run `biosnicar` many times with lots of different input values. perhaps to test the sensitivity of the mdoel to different combinations of factors, or to create lookup tables.
+The default `main.py` produces a single spectral albedo prediction for a given set of input parameters. However, many users will want to run `biosnicar` many times with lots of different input values, perhaps to test the sensitivity of the model to different combinations of factors, or to create lookup tables.
 
-This is straightforward to do with `biosnicar` but it requires creating a new script for calling the `biosnicar` functions. The main concept to understand is that `setup_snicar()` is called once to instantiate all the necessary classes, then their associated values can be updated in each iteration of the code and used for the next simulation. 
+## Using parameter_sweep (recommended)
+
+The easiest way to run `biosnicar` over a range of inputs is the `parameter_sweep` function. It takes a dictionary of parameter names to lists of values, runs the model over every combination (Cartesian product), and returns a pandas DataFrame:
+
+```py
+from biosnicar.drivers.sweep import parameter_sweep
+
+df = parameter_sweep(
+    params={
+        "solzen": [30, 40, 50, 60, 70],
+        "rds": [100, 200, 500, 1000],
+    }
+)
+
+# 20 rows (5 SZA x 4 grain radii), with BBA, BBAVIS, BBANIR, etc.
+print(df.pivot_table(values="BBA", index="solzen", columns="rds"))
+```
+
+`parameter_sweep` handles all the details of object mutation, recalculation of derived quantities (refractive index, irradiance), and result collection. Supported parameter keys include `solzen`, `direct`, `incoming`, `rds`, `rho`, `dz`, `layer_type`, and `impurity.{i}.conc`. See the [sweep module reference](../modules/sweep) for full details.
+
+A complete demo script is provided at `scripts/sweep_demo.py` in the biosnicar repository.
+
+## Manual iteration
+
+For more control, you can iterate over `biosnicar` runs manually. The main concept is that `setup_snicar()` is called once to instantiate all the necessary classes, then their associated values can be updated in each iteration and used for the next simulation.
 
 There is one gotcha that users must be aware of when iterating over many `biosnicar` runs. This is the need to re-execute some class functions if certain fields in the `Ice` or `Illumination` instances are changed. Specifically, these classes have associated functions that calculate the refractive index from the ice optical properties and the irradiance from the solar zenith angle and illumination profile. This means that after updating values in any field in these classes, it is necessary to execute the `ice.calculate_refractive_index(input_file)` and/or `illumination.calculate_irradiance()` functions. This is not necessary for single runs because the functions are invoked when the class is first instantiated.
 
@@ -17,14 +41,12 @@ The code snippet below shows how to build a script for iterating over many input
 # python biosnicar_iterator.py
 
 import numpy as np
-from pathlib import Path
 
-from biosnicar.adding_doubling_solver import adding_doubling_solver
-from biosnicar.column_OPs import get_layer_OPs, mix_in_impurities
-from biosnicar.display import display_out_data, plot_albedo
-from biosnicar.setup_snicar import setup_snicar
-from biosnicar.toon_rt_solver import toon_solver
-from biosnicar.validate_inputs import validate_inputs
+from biosnicar.rt_solvers.adding_doubling_solver import adding_doubling_solver
+from biosnicar.optical_properties.column_OPs import get_layer_OPs, mix_in_impurities
+from biosnicar.drivers.setup_snicar import setup_snicar
+
+input_file = "default"
 
 # run setup_snicar() to establish base-case values for ALL necessary params
 (
@@ -34,7 +56,7 @@ from biosnicar.validate_inputs import validate_inputs
     model_config,
     plot_config,
     impurities,
-) = setup_snicar()
+) = setup_snicar(input_file)
 
 # now define the range of values you actually want to iterate over
 lyrList = [0, 1]
@@ -124,25 +146,17 @@ If you are a linux user you can check your `dask` distributed `biosnicar` runs a
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from pathlib import Path
 import dask
 
-from adding_doubling_solver import adding_doubling_solver
-from column_OPs import get_layer_OPs, mix_in_impurities
-from display import display_out_data, plot_albedo
-from setup_snicar import setup_snicar
-from toon_rt_solver import toon_solver
-from validate_inputs import validate_inputs
+from biosnicar.rt_solvers.adding_doubling_solver import adding_doubling_solver
+from biosnicar.optical_properties.column_OPs import get_layer_OPs, mix_in_impurities
+from biosnicar.drivers.setup_snicar import setup_snicar
 from dask.distributed import Client
 
 if __name__ == "__main__":
     client = Client()
 
-    BIOSNICAR_SRC_PATH = Path(__file__).resolve().parent
-
-    # define input file
-    input_file = BIOSNICAR_SRC_PATH.joinpath("inputs.yaml").as_posix()
-    print(input_file)
+    input_file = "default"
 
     lyrList = [0, 1]
     densList = [400, 500, 600, 700, 800]
@@ -175,7 +189,7 @@ if __name__ == "__main__":
             model_config,
             plot_config,
             impurities,
-        ) = setup_snicar()
+        ) = setup_snicar(input_file)
 
         ice.dz = dz
         ice.nbr_lyr = 2

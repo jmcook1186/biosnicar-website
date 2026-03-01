@@ -466,7 +466,7 @@ Impurities are provided as instances of the `Impurity` class. The clas hass fixe
 IMPURITIES
 BC:
     NAME:  "bc"
-    FILE:  "bc_ChCB_rn40_dns1270.nc"
+    FILE:  "bc_ChCB_rn40_dns1270.npz"
     CFACTOR:  1
     COATED:  False
     UNIT:  0
@@ -480,45 +480,45 @@ The impurity name is simply a user defined tag to recognise the instance of the 
 
 ### FILE
 
-The file is the precise filename in /Data/OP_data/480band/lap/ that contains the optical properties of the impurity to be included. The available options are quite comprehensive, including:
+The file is a name used to look up optical properties from the consolidated `lap.npz` archive in `/Data/OP_data/480band/`. The filename stem (without extension) is used as a key prefix. The available options are quite comprehensive, including:
 
-- `bc_ChCB_rn40_dns1270.nc`:  uncoated black carbon (Bohren and Huffman, 1983)
-- `miecot_slfsot_ChC90_dns_1317.nc`:  sulfate-coated BC (Bohren and Huffman, 1983)
-- `brC_Kirch_BCsd.nc`:  uncoated brown carbon (Kirchstetter et al. (2004).)
-- `brC_Kirch_BCsd_slfcot.nc`:  sulfate-coated brown carbon (Kirchstetter et al. (2004)
-- `dust_balkanski_central_size1.nc`:  dust size 1 (r{'='}0.05-0.5um) (Balkanski et al 2007)
-- `dust_balkanski_central_size2.nc`:  dust size 2 (r{'='}0.5-1.25um) (Balkanski et al 2007)
-- `dust_balkanski_central_size3.nc`:  dust size 3 (r{'='}1.25-2.5um) (Balkanski et al 2007)
-- `dust_balkanski_central_size4.nc`:  dust size 4 (r{'='}2.5-5.0um)  (Balkanski et al 2007)
-- `dust_balkanski_central_size5.nc`:  dust size 5 (r{'='}5.0-50um)  (Balkanski et al 2007)
-- `volc_ash_eyja_central_size1.nc`:  volcanic ash size 1 (r{'='}0.05-0.5um) (Flanner et al 2014)
-- `volc_ash_eyja_central_size2.nc`:  volcanic ash size 2 (r{'='}0.5-1.25um) (Flanner et al 2014)
-- `volc_ash_eyja_central_size3.nc`:  volcanic ash size 3 (r{'='}1.25-2.5um) (Flanner et al 2014)
-- `volc_ash_eyja_central_size4.nc`:  volcanic ash size 4 (r{'='}2.5-5.0um) (Flanner et al 2014)
-- `volc_ash_eyja_central_size5.nc`:  volcanic ash size 5 (r{'='}5.0-50um) (Flanner et al 2014)
-- `volc_ash_mtsthelens_20081011.nc`:  ashes from Mount Saint Helen's
-- `dust_skiles_size1.nc`:  Colorado dust 1 (Skiles et al 2017)
-- `dust_skiles_size2.nc`:  Colorado dust 2 (Skiles et al 2017)
-- `dust_skiles_size3.nc`:  Colorado dust 3 (Skiles et al 2017)
-- `dust_skiles_size4.nc`:  Colorado dust 4 (Skiles et al 2017)
-- `dust_skiles_size5.nc`:  Colorado dust 5 (Skiles et al 2017)
-- `dust_greenland_central_size1.nc`:  Greenland dust 1 (Polashenski et al 2015)
-- `dust_greenland_central_size2.nc`:  Greenland dust 2 (Polashenski et al 2015)
-- `dust_greenland_central_size3.nc`:  Greenland dust 3 (Polashenski et al 2015)
-- `dust_greenland_central_size4.nc`:  Greenland dust 4 (Polashenski et al 2015)
-- `dust_greenland_central_size5.nc`:  Greenlanddust 5 (Polashenski et al 2015)
-- `dust_greenland_Cook_LOW_20190911.nc`:  Dark Zone dust 1 (Cook et al. 2019 "LOW")
-- `dust_greenland_Cook_CENTRAL_20190911.nc`:  Dark Zone dust 2 (Cook et al. 2019 "MEAN") 
-- `dust_greenland_Cook_HIGH_20190911.nc`:  Dark Zone dust 3 (Cook et al. 2019 "HIGH") 
-- `snw_alg_r025um_chla020_chlb025_cara150_carb140.nc`:  Snow Algae (Cook et al. 2017a, spherical, C nivalis)
-- `snow_algae_empirical_Chevrollier2023.nc`:  Snow algae, whole-cell measurements (Chevrollier et al 2023, 2024) 
-- `Cook2020_glacier_algae_4_40.nc`:  Glacier algae, reconstructed from pigment profiles (Cook et al. 2020)
-- `ice_algae_empirical_Chevrollier2023.nc`:  Glacier algae, whole-cell measurements (Chevrollier et al 2023, 2024)
+- `bc_ChCB_rn40_dns1270.npz`:  uncoated black carbon (Bohren and Huffman, 1983)
+- `miecot_slfsot_ChC90_dns_1317.npz`:  sulfate-coated BC (Bohren and Huffman, 1983)
+- `brC_Kirch_BCsd.npz`:  uncoated brown carbon (Kirchstetter et al. (2004).)
+- `brC_Kirch_BCsd_slfcot.npz`:  sulfate-coated brown carbon (Kirchstetter et al. (2004)
+- `dust_balkanski_central_size1.npz`:  dust size 1 (r{'='}0.05-0.5um) (Balkanski et al 2007)
+- `dust_balkanski_central_size2.npz`:  dust size 2 (r{'='}0.5-1.25um) (Balkanski et al 2007)
+- `dust_balkanski_central_size3.npz`:  dust size 3 (r{'='}1.25-2.5um) (Balkanski et al 2007)
+- `dust_balkanski_central_size4.npz`:  dust size 4 (r{'='}2.5-5.0um)  (Balkanski et al 2007)
+- `dust_balkanski_central_size5.npz`:  dust size 5 (r{'='}5.0-50um)  (Balkanski et al 2007)
+- `volc_ash_eyja_central_size1.npz`:  volcanic ash size 1 (r{'='}0.05-0.5um) (Flanner et al 2014)
+- `volc_ash_eyja_central_size2.npz`:  volcanic ash size 2 (r{'='}0.5-1.25um) (Flanner et al 2014)
+- `volc_ash_eyja_central_size3.npz`:  volcanic ash size 3 (r{'='}1.25-2.5um) (Flanner et al 2014)
+- `volc_ash_eyja_central_size4.npz`:  volcanic ash size 4 (r{'='}2.5-5.0um) (Flanner et al 2014)
+- `volc_ash_eyja_central_size5.npz`:  volcanic ash size 5 (r{'='}5.0-50um) (Flanner et al 2014)
+- `volc_ash_mtsthelens_20081011.npz`:  ashes from Mount Saint Helen's
+- `dust_skiles_size1.npz`:  Colorado dust 1 (Skiles et al 2017)
+- `dust_skiles_size2.npz`:  Colorado dust 2 (Skiles et al 2017)
+- `dust_skiles_size3.npz`:  Colorado dust 3 (Skiles et al 2017)
+- `dust_skiles_size4.npz`:  Colorado dust 4 (Skiles et al 2017)
+- `dust_skiles_size5.npz`:  Colorado dust 5 (Skiles et al 2017)
+- `dust_greenland_central_size1.npz`:  Greenland dust 1 (Polashenski et al 2015)
+- `dust_greenland_central_size2.npz`:  Greenland dust 2 (Polashenski et al 2015)
+- `dust_greenland_central_size3.npz`:  Greenland dust 3 (Polashenski et al 2015)
+- `dust_greenland_central_size4.npz`:  Greenland dust 4 (Polashenski et al 2015)
+- `dust_greenland_central_size5.npz`:  Greenland dust 5 (Polashenski et al 2015)
+- `dust_greenland_Cook_LOW_20190911.npz`:  Dark Zone dust 1 (Cook et al. 2019 "LOW")
+- `dust_greenland_Cook_CENTRAL_20190911.npz`:  Dark Zone dust 2 (Cook et al. 2019 "MEAN")
+- `dust_greenland_Cook_HIGH_20190911.npz`:  Dark Zone dust 3 (Cook et al. 2019 "HIGH")
+- `snw_alg_r025um_chla020_chlb025_cara150_carb140.npz`:  Snow Algae (Cook et al. 2017a, spherical, C nivalis)
+- `snow_algae_empirical_Chevrollier2023.npz`:  Snow algae, whole-cell measurements (Chevrollier et al 2023, 2024)
+- `Cook2020_glacier_algae_4_40.npz`:  Glacier algae, reconstructed from pigment profiles (Cook et al. 2020)
+- `ice_algae_empirical_Chevrollier2023.npz`:  Glacier algae, whole-cell measurements (Chevrollier et al 2023, 2024)
   
   
 ### UNIT
 
-All these impurities have their mass absorption coefficients in units of ppb, and therefore their concentration (CONC) should be expressed normalised to mass in the model - i.e. in ng/g or ppb. This is achieved by setting `UNIT {'=='}0`. There are two exceptions to this:  "snow_algae_empirical_Chevrollier2023.nc" and "ice_algae_empirical_Chevrollier2023.nc". These are empirically measured optical properties for snow and glacier algae whose absorption coefficients is expressed in m2/cell. Their concentration (`CONC`) should therefore be expressed in cells/mL. This is achieved by setting `UNIT{'=='}1`. There are validity checks in place to ensure these values are set correctly.
+All these impurities have their mass absorption coefficients in units of ppb, and therefore their concentration (CONC) should be expressed normalised to mass in the model - i.e. in ng/g or ppb. This is achieved by setting `UNIT {'=='}0`. There are two exceptions to this:  "snow_algae_empirical_Chevrollier2023.npz" and "ice_algae_empirical_Chevrollier2023.npz". These are empirically measured optical properties for snow and glacier algae whose absorption coefficients is expressed in m2/cell. Their concentration (`CONC`) should therefore be expressed in cells/mL. This is achieved by setting `UNIT{'=='}1`. There are validity checks in place to ensure these values are set correctly.
 
 ### CONC
 
@@ -961,11 +961,11 @@ Path to directory to save figures in.
 `"Data/pigments/"`
 
 
-### SAVE_NETCDF
+### SAVE_TO_LAP
 
 #### Definition
 
-Toggles saving of new optical property data to netCDF format.
+Toggles saving of new optical property data into the consolidated `lap.npz` archive used by biosnicar.
 
 #### Values
 
@@ -976,41 +976,11 @@ Toggles saving of new optical property data to netCDF format.
 `False`
 
 
-### SAVE_PATH_NETCDF
+### IMPURITY_STEM
 
 #### Definition
 
-Path to directory to save NetCDF file in. Should be the same as the source directory for lap data loaded into BioSNICAR.
-
-#### Values
-
-`String`
-
-#### Default
-
-`"Data/OP_data/480band/lap/"`
-
-
-### INFO_NETCDF
-
-#### Definition
-
-Any additional information to be stored in the NetCDF file as attribute data (e.g. authors, dates etc).
-
-#### Values
-
-`String`
-
-#### Default
-
-`"info"`
-
-
-### FILENAME_NETCDF
-
-#### Definition
-
-Filename for saving the new NetCDF file to. Should be the same as the file defned in any instantiation of Impurity class intending to use these ptical properties in BioSNICSAR.
+Stem name used as the key prefix when saving new impurity optical properties into `lap.npz`. For example, a stem of `"my_algae"` will create entries like `my_algae__ext_cff_mss`, `my_algae__ss_alb`, etc. This stem should match the filename (without extension) defined in the `FILE` field of any `Impurity` that will use these optical properties.
 
 #### Values
 
@@ -1019,3 +989,18 @@ Filename for saving the new NetCDF file to. Should be the same as the file defne
 #### Default
 
 `"alg"`
+
+
+### INFO
+
+#### Definition
+
+Any additional information to be stored as metadata alongside the saved optical properties (e.g. authors, dates etc).
+
+#### Values
+
+`String`
+
+#### Default
+
+`"info"`

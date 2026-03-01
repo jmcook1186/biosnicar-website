@@ -6,16 +6,16 @@ This module sets up BioSNICAR by creating instances of all the relevant classes 
 
 Calls internal functions and returns class instances as expected by BioSNICAR model.
 
-Args
-- `None`
+### Args
+- `input_file`: path to a YAML configuration file, or `"default"` to use the built-in `inputs.yaml`
 
-Returns
+### Returns
 - `ice`: instance of Ice class
 - `illumination`: instance of Illumination class
 - `rt_config`: instance of RTConfig class
 - `model_config`: instance of ModelConfig class
 - `plot_config`: instance of PlotConfig class
-- `display_config`: instance of DisplayConfig class
+- `impurities`: array of instances of Impurity class
 
 
 ## build_classes
@@ -23,23 +23,22 @@ Returns
 Instantiates classes according to config in yaml file.
 
 ### Args
-    None
+- `input_file`: path to a YAML configuration file
 
-Returns
+### Returns
 - `ice`: instance of Ice class
 - `illumination`: instance of Illumination class
 - `rt_config`: instance of RTConfig class
 - `model_config`: instance of ModelConfig class
 - `plot_config`: instance of PlotConfig class
-- `display_config`: instance of DisplayConfig class
 
 ## build_impurities_array
 
 Creates an array of instances of Impurity with properties defined in yaml file.
 
-### Args:
-- `None`
+### Args
+- `input_file`: path to a YAML configuration file
 
-Returns:
+### Returns
 - `impurities`: array of instances of Impurity
 
