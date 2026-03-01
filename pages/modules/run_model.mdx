@@ -1,0 +1,60 @@
+# run_model module
+
+This module provides the single entry point for running the BioSNICAR forward model. It handles the full pipeline (setup, optical properties, impurity mixing, radiative transfer) in a single call and accepts keyword overrides for any model parameter.
+
+## run_model
+
+Run the BioSNICAR forward model and return outputs.
+
+Builds model objects from the input file, applies any keyword overrides to ice/illumination/impurity parameters, then runs the full pipeline.
+
+### Args
+- `input_file`: path to a YAML configuration file, or `"default"` to use the built-in `inputs.yaml`
+- `solver`: `"adding-doubling"` (default) or `"toon"`
+- `validate`: if `True`, run input validation before the forward model
+- `plot`: if `True`, display a spectral albedo plot after the run
+- `**overrides`: parameter overrides applied before running the model (see supported keys below)
+
+### Returns
+- `outputs`: instance of `Outputs` class with albedo, BBA, absorbed fluxes, etc.
+
+### Raises
+- `ValueError` if `solver` is not recognised or an override key is unknown
+
+### Supported override keys
+
+| Key | Applies to | Behaviour |
+|-----|-----------|-----------|
+| `solzen` | `illumination.solzen` | Scalar, triggers `calculate_irradiance()` |
+| `direct` | `illumination.direct` | Scalar, triggers `calculate_irradiance()` |
+| `incoming` | `illumination.incoming` | Scalar, triggers `calculate_irradiance()` |
+| `rds` | `ice.rds` | Broadcast to all layers if scalar |
+| `rho` | `ice.rho` | Broadcast to all layers if scalar |
+| `dz` | `ice.dz` | Broadcast to all layers if scalar, or pass a list |
+| `lwc` | `ice.lwc` | Broadcast to all layers if scalar |
+| `layer_type` | `ice.layer_type` | Broadcast to all layers if scalar |
+| `impurity_{i}_conc` | `impurities[i].conc` | Scalar: applied to first layer only (rest zeroed); list: applied directly |
+
+### Examples
+
+```py
+from biosnicar.drivers.run_model import run_model
+
+# Run with all defaults
+outputs = run_model()
+print(outputs.BBA)
+
+# Override specific parameters
+outputs = run_model(solzen=50, rds=1000)
+print(outputs.albedo)
+
+# With validation and plotting
+outputs = run_model(solver="adding-doubling", validate=True, plot=True)
+
+# Set impurity concentration (black carbon in first layer)
+outputs = run_model(impurity_0_conc=500)
+
+# Use as top-level convenience
+import biosnicar
+outputs = biosnicar.run_model(solzen=60, rds=200)
+```

@@ -20,9 +20,29 @@ df = parameter_sweep(
 print(df.pivot_table(values="BBA", index="solzen", columns="rds"))
 ```
 
-`parameter_sweep` handles all the details of object mutation, recalculation of derived quantities (refractive index, irradiance), and result collection. Supported parameter keys include `solzen`, `direct`, `incoming`, `rds`, `rho`, `dz`, `layer_type`, and `impurity.{i}.conc`. See the [sweep module reference](../modules/sweep) for full details.
+`parameter_sweep` handles all the details of object mutation, recalculation of derived quantities (refractive index, irradiance), and result collection. Supported parameter keys include `solzen`, `direct`, `incoming`, `rds`, `rho`, `dz`, `lwc`, `layer_type`, and `impurity.{i}.conc`. See the [sweep module reference](../modules/sweep) for full details.
 
 A complete demo script is provided at `scripts/sweep_demo.py` in the biosnicar repository.
+
+## Using run_model() in a loop
+
+For scenarios where `parameter_sweep` doesn't quite fit (e.g. you need custom logic between runs or non-Cartesian parameter combinations), you can call `run_model()` in a loop:
+
+```py
+from biosnicar.drivers.run_model import run_model
+
+results = []
+for sza in [30, 40, 50, 60, 70]:
+    for rds in [200, 500, 1000, 5000]:
+        outputs = run_model(solzen=sza, rds=rds)
+        results.append({"solzen": sza, "rds": rds, "BBA": outputs.BBA})
+
+import pandas as pd
+df = pd.DataFrame(results)
+print(df.pivot_table(values="BBA", index="solzen", columns="rds"))
+```
+
+This approach re-initialises all model objects on every call, so it's somewhat slower than the manual iteration method below but much simpler and less error-prone.
 
 ## Manual iteration
 
@@ -105,7 +125,7 @@ for layer_type in lyrList:
                             bc,
                             bc,
                         ]  # bc in all layers
-                        # remember to recalculate RI after changing any ice optical values 
+                        # remember to recalculate RI after changing any ice optical values
                         ice.calculate_refractive_index(input_file)
 
                         ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, model_config)
@@ -137,7 +157,7 @@ np.savetxt("biosnicar_multiple_runs.csv", specOut, delimiter=",")
 
 Iterating over many `biosnicar` runs is a very parallelizable process. This means the total number of runs can be split across many processor cores so that they can be executed simultaneously, rather than sequentially, one after the other. The more cores you have available, the faster the copde will execute. The code below is an example driver script that runs `biosnicar` with a large number of configurations, run in a distributed way across all the available cores. This is achieved using the `dask` package.
 
-Note that both `dask` and `dask.distributed` are required dependencies. Ensure you have installed `dask` using `pip install dask[complete]` which includes all the necessary packages. 
+Note that both `dask` and `dask.distributed` are required dependencies. Ensure you have installed `dask` using `pip install dask[complete]` which includes all the necessary packages.
 
 If you are a linux user you can check your `dask` distributed `biosnicar` runs are working as expected using a command lione tool like `htop`. This tool allows you to see the usage of each available processing core on your machine. Depending how many cores you have, you should see `biosnicar` accouting for some percentage of the CPU usage on every available core.
 

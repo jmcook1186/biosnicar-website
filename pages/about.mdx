@@ -24,7 +24,7 @@ The `biosnicar` repository also includes a separate module for calculating the r
 
 The impurity library that comes with `biosnicar` prioritizes those with empirically-measured optical properties, or impurities whose optical properties are available in the science literature.
 
-However, we also provide a `bio-optical` module that includes a model to calculate the single-scattering optical properties of pigmented algae, given user defined shape and pigment concentrations.
+However, we also provide a `biooptical` module (in `biosnicar/biooptical/`) that includes a model to calculate the single-scattering optical properties of pigmented algae, given user defined shape and pigment concentrations.
 Two options for impurity optical property calculations are available: spherical cells as per ice grains using Mie theory, typically used for snow algae, and circular based cylinders using geometric optics typically used for glacier algae that are long chains of cells approximated as cylinders after Lee and Pilon, 2013. 
 The user needs to feed the bio-optical model with the refractive index and absorption cross section of the cell, along with algae dry and wet density and cell size. 
 The absorption cross section can be calculated in the model from intracellular pigment concentrations (Cook et al. 2017; pigment absorption coefficients from Bidigare 1990, Halbach 2022, Clementson and Wojtasiewicz 2019)) or loaded directly if they have been measured empirically for real cells. 

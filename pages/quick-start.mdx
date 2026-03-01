@@ -38,21 +38,40 @@ Finally, if you do not wish to install anything on your computer, but you use VS
 
 ### Running the model
 
-The model driver (main.py) is in the root repository and all the core source code can be found in `/biosnicar`. From the top level directory (`~/`biosnicar_py`), run:
+The model driver (main.py) is in the root repository and all the core source code can be found in `/biosnicar`. From the top level directory (`~/biosnicar_py`), run:
 
 ```sh
 python main.py
 ```
 
-This command will run the model with all the default settings from the config file `inputs.yaml` file. 
-The user will see a list of output values printed to the console and a spectral albedo plot appear in a separate window. 
+This command will run the model with all the default settings from the config file `inputs.yaml` file.
+The user will see a list of output values printed to the console and a spectral albedo plot appear in a separate window.
 The code can also be run in an interactive session (Jupyter/iPython) in which case the relevant data and figure will appear in the interactive console, as well as in the command line outside of the top level directory, as long as the path to main.py is adjusted.
 
-Most users will want to experiment with changing input parameters. 
-This is achieved by adjusting the values in the config file `inputs.yaml`. 
-The nature of each parameter is described in in-line annotations to guide the user, and detailed in the [Inputs](inputs) page. 
-Invalid combinations of values will be rejected by our error-checking code. 
-Most users should have no reason to modify any other file in this repository except for those in `inputs.yaml`.
+### Programmatic API — `run_model()`
+
+For programmatic use, `run_model()` is the recommended single entry point. It accepts keyword overrides for any model parameter, runs the full pipeline, and returns an `Outputs` object:
+
+```py
+from biosnicar.drivers.run_model import run_model
+
+# Run with default inputs
+outputs = run_model()
+print(outputs.BBA)
+
+# Override specific parameters
+outputs = run_model(solzen=50, rds=1000, impurity_0_conc=500)
+print(outputs.albedo)  # 480-element spectral albedo
+```
+
+Supported override keys: `solzen`, `direct`, `incoming`, `rds`, `rho`, `dz`, `lwc`, `layer_type`, and `impurity_{i}_conc`. `run_model()` is also accessible as `biosnicar.run_model()` after `import biosnicar`.
+
+### Changing input parameters
+
+Most users will want to experiment with changing input parameters.
+For batch configuration, adjust the values in the config file `inputs.yaml`.
+The nature of each parameter is described in in-line annotations to guide the user, and detailed in the [Inputs](inputs) page.
+Invalid combinations of values will be rejected by our error-checking code.
 
 More complex applications of the model code, for example model inversions, field/model comparisons etc are presented in the [User guides](user-guides) menu.
 
@@ -73,6 +92,6 @@ This is good for reproducibility as those config files can be archived.
 
 ### Bio-optical model
 
-The bio-optical model is generally run separately to the main model code because most users use the default optical properties provided in the downloaded repository. 
-However, some users may wish to generate new files. To do this, simply call `run_biooptical_model()` in `main.py` after updating the biooptical section of `inputs.yaml`. 
-We expect the bio-optical model to be used rarely. 
+The bio-optical model (in the `biosnicar/biooptical/` module) is generally run separately to the main model code because most users use the default optical properties provided in the downloaded repository.
+However, some users may wish to generate new files. To do this, simply call `run_biooptical_model()` in `main.py` after updating the biooptical section of `inputs.yaml`.
+We expect the bio-optical model to be used rarely.

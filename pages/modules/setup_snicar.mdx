@@ -2,6 +2,8 @@
 
 This module sets up BioSNICAR by creating instances of all the relevant classes using the data provided in `inputs.yaml`.
 
+**Note:** For most use cases, the higher-level `run_model()` function (in `biosnicar.drivers.run_model`) is recommended instead of calling `setup_snicar()` directly. `run_model()` handles the full pipeline (setup, optical properties, impurity mixing, radiative transfer) in a single call and accepts keyword overrides for any parameter. See the [User Guides](../user-guides/simple-albedo-prediction) for examples.
+
 ## setup_snicar
 
 Calls internal functions and returns class instances as expected by BioSNICAR model.

@@ -20,7 +20,7 @@ In this document, the meaning of each field in `inputs.yaml` is defined along wi
 
 ## PATHS
 
-The paths to specific files are defined in this subsection. The root directory is automatically detected and the user should not need to change these paths, as all paths are relative to the base directory. The only exception is if the user wants to switch solver for the ice and snow optical properties. The default in biosnicar is the solver from Wiscome 1979, but the Matlab version uses the Bohren and Huffman 1983 solver, which is also available in biosnicar. To do so, simply uncomment the paths with the `_BH83` extension and comment those without the extension (eg uncomment "Data/OP_data/480band/ice_spherical_grains_BH83/" and comment "Data/OP_data/480band/ice_spherical_grains/").
+The paths to specific files are defined in this subsection. The root directory is automatically detected and the user should not need to change these paths, as all paths are relative to the base directory. The only exception is if the user wants to switch solver for the ice and snow optical properties. The default in biosnicar is the solver from Wiscome 1979, but the Matlab version uses the Bohren and Huffman 1983 solver, which is also available in biosnicar. To do so, simply uncomment the paths with the `_BH83` extension and comment those without the extension (eg uncomment "data/OP_data/480band/ice_spherical_grains_BH83/" and comment "data/OP_data/480band/ice_spherical_grains/").
 
 ## CTRL
 
@@ -346,7 +346,7 @@ List of positive integers with `length {'=='} nbr_lyr`.
 
 #### Definition
 
-Effective radius of ice grains if `layer_type{'=='}0` and effective radius of air bubbles if `layer_type{'=='}1`. The valid range varies according to choice of RF - we have a larger database for Picard et al. 2016 refractive indices than the other because it is our default. Please check the /Data/OP_data/480band/ directory for available radii.
+Effective radius of ice grains if `layer_type{'=='}0` and effective radius of air bubbles if `layer_type{'=='}1`. The valid range varies according to choice of RF - we have a larger database for Picard et al. 2016 refractive indices than the other because it is our default. Please check the /data/OP_data/480band/ directory for available radii.
 
 #### Values
 
@@ -404,7 +404,7 @@ List of floats between 0 and 1 with `length {'=='} nbr_lyr`.
 
 #### Definition
 
-Length of one of the six sides of the hexagonal face of the iuce grain when `shp{'=='}4`. The available size combinations can be seen by browsing /Data/OP_data/480band/ice_hexagonal_columns.
+Length of one of the six sides of the hexagonal face of the iuce grain when `shp{'=='}4`. The available size combinations can be seen by browsing /data/OP_data/480band/ice_hexagonal_columns.
 
 #### Values
 
@@ -418,7 +418,7 @@ List of positive integers with `length {'=='} nbr_lyr`.
 
 #### Definition
 
-Length of the long axis of the ice grain when shp{'=='}4. The available size combinations can be seen by browsing /Data/OP_data/480band/ice_hexagonal_columns.
+Length of the long axis of the ice grain when shp{'=='}4. The available size combinations can be seen by browsing /data/OP_data/480band/ice_hexagonal_columns.
 
 #### Values
 
@@ -480,7 +480,7 @@ The impurity name is simply a user defined tag to recognise the instance of the 
 
 ### FILE
 
-The file is a name used to look up optical properties from the consolidated `lap.npz` archive in `/Data/OP_data/480band/`. The filename stem (without extension) is used as a key prefix. The available options are quite comprehensive, including:
+The file is a name used to look up optical properties from the consolidated `lap.npz` archive in `/data/OP_data/480band/`. The filename stem (without extension) is used as a key prefix. The available options are quite comprehensive, including:
 
 - `bc_ChCB_rn40_dns1270.npz`:  uncoated black carbon (Bohren and Huffman, 1983)
 - `miecot_slfsot_ChC90_dns_1317.npz`:  sulfate-coated BC (Bohren and Huffman, 1983)
@@ -607,20 +607,20 @@ The keys should remain constant, but the user can provide concentrations for eac
 #### Defaults
 
 ```
-"Data/pigments/alloxanthin.csv": 0,
-"Data/pigments/antheraxanthin.csv": 0,
-"Data/pigments/chl-a.csv": 0,
-"Data/pigments/chl-b.csv": 0,
-"Data/pigments/lutein.csv": 0,
-"Data/pigments/neoxanthin.csv": 0,
-"Data/pigments/pheophytin.csv": 0,
-"Data/pigments/Photop_carotenoids.csv": 0,
-"Data/pigments/Photos_carotenoids.csv": 0,
-"Data/pigments/ppg.csv": 0,
-"Data/pigments/trans_astaxanthin_ester.csv": 0,
-"Data/pigments/trans_astaxanthin.csv": 0,
-"Data/pigments/violaxanthin.csv": 0,
-"Data/pigments/zeaxanthin.csv": 0,
+"data/pigments/alloxanthin.csv": 0,
+"data/pigments/antheraxanthin.csv": 0,
+"data/pigments/chl-a.csv": 0,
+"data/pigments/chl-b.csv": 0,
+"data/pigments/lutein.csv": 0,
+"data/pigments/neoxanthin.csv": 0,
+"data/pigments/pheophytin.csv": 0,
+"data/pigments/Photop_carotenoids.csv": 0,
+"data/pigments/Photos_carotenoids.csv": 0,
+"data/pigments/ppg.csv": 0,
+"data/pigments/trans_astaxanthin_ester.csv": 0,
+"data/pigments/trans_astaxanthin.csv": 0,
+"data/pigments/violaxanthin.csv": 0,
+"data/pigments/zeaxanthin.csv": 0,
 ```
 
 ### PIGMENT_DIR
@@ -635,7 +635,7 @@ Path to the directory holding then pigment absorption data relative to the base 
 
 #### Default
 
-`"Data/pigments/"`
+`"data/pigments/"`
 
 
 ### ABS_CFF_LOAD_RECONSTRUCTED
@@ -727,7 +727,7 @@ Path to directory containing pigment packaging correction files
 
 #### Default
 
-`"Data/pigments/"`
+`"data/pigments/"`
 
 
 ### K_WATER_DIR 
@@ -742,7 +742,7 @@ Path to file containing imaginary part of the refractive index of water
 
 #### Default
 
-`"Data/OP_data/k_ice_480.csv"`
+`"data/OP_data/k_ice_480.csv"`
 
 
 ### UNIT:
@@ -958,7 +958,7 @@ Path to directory to save figures in.
 
 #### Default
 
-`"Data/pigments/"`
+`"data/pigments/"`
 
 
 ### SAVE_TO_LAP

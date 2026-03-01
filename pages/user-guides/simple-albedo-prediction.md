@@ -14,20 +14,46 @@ To see an explanation of each value, visit the [Inputs page](../guides/inputs.md
 
 You can simply update the values in this file, save it, and then run the driver script again.
 
-## Updating the driver script
+## Using `run_model()` (recommended)
 
-You can write your own driver script. We have provided a default `main.py` as an example that you can use, but you can be creative and run the `biosnicar` functions however you see fit. We wrapped everything you need into a single function, `get_albedo` so all you have to do is call that function. The `get_albedo()` function takes three simple arguments. First, decide which radiative transfer solver you want to use and pass the name (either `"toon"` or `"adding-doubling"`) as the first argument. Then, you can toggle albedo plotting on/off by passing `plot=True` or `plot=False`. You can also choose whether you want `biosnicar` to check your input values are valid - this can help prevent accidentally creating unrealistic model scenarios, but if you toggle it off you will benefit from a (small) increase in execution speed. Pass `validation=True` or `validation=False` to configure the function. That's all you need to do - everything else is automated and `biosnicar` will pull the remaining configuration from `inputs.yaml`.
+The recommended way to run `biosnicar` programmatically is with the `run_model()` function. It handles the full pipeline (setup, optical properties, impurity mixing, radiative transfer) in a single call and accepts keyword overrides for any model parameter:
 
-To customize your `biosnicar` runs further, you can use the individual `biosnicar` functions instead of the convenience wrappers. The `get_albedo()` wrapper is executing the following steps in this order:
+```py
+from biosnicar.drivers.run_model import run_model
 
-- import the biosnicar modules
-- provide the path to `inputs.yaml`
-- instantiate the necessary classes by calling `setup_snicar()`
-- get the ice column optical properties by calling `get_layer_OPs()` and `mix_in_impurities()`
-- solve the radiative transfer equations by calling either `adding_doubling_solver()` or `toon_solver`
-- you probably also want to plot the albedo using `plot_albedo()`
+# Run with all defaults from inputs.yaml
+outputs = run_model()
+print(outputs.BBA)       # broadband albedo
+print(outputs.albedo)    # 480-element spectral albedo
 
-Here's a minimal example:
+# Override specific parameters
+outputs = run_model(solzen=50, rds=1000, impurity_0_conc=500)
+print(outputs.BBA)
+```
+
+`run_model()` is also accessible as `biosnicar.run_model()` after `import biosnicar`.
+
+Supported override keys include `solzen`, `direct`, `incoming`, `rds`, `rho`, `dz`, `lwc`, `layer_type`, and `impurity_{i}_conc` (where `i` is the 0-based impurity index). Scalar values for ice parameters are broadcast to all layers; scalar impurity concentrations are applied to the first layer only.
+
+You can also toggle input validation and plotting:
+
+```py
+outputs = run_model(solver="adding-doubling", validate=True, plot=True, solzen=60)
+```
+
+## Using `get_albedo()` wrapper
+
+The `get_albedo()` wrapper is a thin convenience function around `run_model()` that returns only the spectral albedo array. It takes three simple arguments: the solver name (`"toon"` or `"adding-doubling"`), `plot=True/False`, and `validate=True/False`:
+
+```py
+from biosnicar.drivers import get_albedo
+
+albedo = get_albedo.get("adding-doubling", plot=True, validate=True)
+```
+
+## Using individual functions
+
+For maximum control, you can call the individual `biosnicar` functions directly. This gives you access to the return values of all the intermediate functions, such as the physical and optical properties of the ice column:
 
 ```py
 from biosnicar.rt_solvers.adding_doubling_solver import adding_doubling_solver
@@ -61,6 +87,6 @@ You could save this as `example.py`, save it in the project directory and run us
 python example.py
 ```
 
-Using this sequence of function calls instead of the `get_albedo()` wrapper gives you access to the return values of all the intermediate functions, such as the physical and optical properties of the ice column. You also get the full set of output values so you can decide what to plot, download or pass into some new logic you create for yourself!
+Using this sequence of function calls instead of `run_model()` gives you access to the return values of all the intermediate functions, such as the physical and optical properties of the ice column. You also get the full set of output values so you can decide what to plot, download or pass into some new logic you create for yourself!
 
 We have made `biosnicar` as composable as possible, so you can tailor the complexity to your needs. You can chop up and recompose elements of `biosnicar` in creative ways to go beyond simple albedo predictions!

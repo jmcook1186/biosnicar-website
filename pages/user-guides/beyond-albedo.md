@@ -19,33 +19,30 @@ This already happens in the downloaded version of `biosnicar` - you don't have t
 
 It is also possible to extend the scope of `Outputs` to include some more values that are currently treated as intermediates in the radiative transfer model. For example, upwards and downward fluxes in each layer (output from the `calculate_fluxes()` function in each solver but not propagated to `Outputs`).
 
-**Note** that if you are using the convenience wrapper, `get_albedo()`, you only have access to the albedo data. This is because the albedo data is extracted from Outputs inside `get_albedo()` and returned on its own. You can either make a very simple update to `get_albedo()` by swapping the return value from `outputs.albedo` to simply `outputs`, or you can run the individual `biosnicar` functions without the `get_albedo()` wrapper. In the latter case, the radiative transfer solvers already return the full set of output values.
+## Using `run_model()` (recommended)
 
-Here's how you would update `get_albedo` to return all the outputs:
-
-```py
-# ORIGINAL
-  ...
-    display_out_data(outputs)
-    return outputs.albedo
- 
-# UPDATED
-  ...
-    display_out_data(outputs)
-    return outputs
-```
-
-And then you could access each output value as follows:
+The `run_model()` function already returns the full `Outputs` object, giving you access to all the fields listed above:
 
 ```py
-outputs = get_albedo("adding-doubling", plot=False, validate-True)
-print(outputs.albedo) # print the albedo
-print(outputs.BBA) # print the broadband albedo
-# ...etc
+from biosnicar.drivers.run_model import run_model
 
+outputs = run_model(solzen=50, rds=1000)
+
+print(outputs.albedo)    # spectral albedo (480 wavelengths)
+print(outputs.BBA)       # broadband albedo
+print(outputs.BBAVIS)    # visible broadband albedo
+print(outputs.BBANIR)    # NIR broadband albedo
+print(outputs.heat_rt)   # heating rate
+print(outputs.absorbed_flux_per_layer)  # absorbed energy per layer
 ```
 
-Here's how you can run the functions individually, without using the `get_albedo()` wrapper:
+## Using `get_albedo()` wrapper
+
+**Note** that the `get_albedo()` convenience wrapper returns only the spectral albedo array — not the full `Outputs` object. If you need other output values, use `run_model()` instead.
+
+## Using individual functions
+
+For maximum control, you can also run the individual `biosnicar` functions without any wrapper:
 
 ```py
 from biosnicar.rt_solvers.adding_doubling_solver import adding_doubling_solver
@@ -70,7 +67,7 @@ tau, ssa, g, L_snw = mix_in_impurities(
 # now run one or both of the radiative transfer solvers
 outputs = adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config)
 
-# now you have access to all the output values. You can access them for plotting or 
+# now you have access to all the output values. You can access them for plotting or
 # printing, or using in some other way.
 
 plot_albedo(plot_config, model_config, outputs.albedo) # plot albedo
