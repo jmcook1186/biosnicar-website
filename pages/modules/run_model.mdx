@@ -35,6 +35,27 @@ Builds model objects from the input file, applies any keyword overrides to ice/i
 | `layer_type` | `ice.layer_type` | Broadcast to all layers if scalar |
 | `impurity_{i}_conc` | `impurities[i].conc` | Scalar: applied to first layer only (rest zeroed); list: applied directly |
 
+### Layer count changes and automatic resizing
+
+When you pass a list-valued ice override (e.g. `dz`, `rds`, `rho`) with a different length than the default configuration, `run_model` automatically resizes **all** per-layer attributes to match the new layer count. This includes both ice properties (`cdom`, `shp`, `water`, `hex_side`, `hex_length`, `shp_fctr`, `grain_ar`, `lwc`) and **impurity concentrations**.
+
+- **Ice attributes** (e.g. `dz`, `rds`, `rho`, `grain_ar`) that aren't explicitly overridden are extended by **repeating their last value**, or truncated to the new length. This ensures physical properties like grain radius and density are never zero-filled.
+- **Impurity concentrations** that aren't explicitly overridden are **zero-padded** to the new length, or truncated. Zero is the correct default since additional layers should be assumed clean unless specified otherwise.
+
+For example, the default YAML config has 2 layers. If you pass `dz=[0.02, 0.05, 0.05, 0.05, 0.83]` (5 layers), all ice attributes and impurity concentrations are resized to length 5 before your overrides are applied. Without this resizing, `mix_in_impurities` would fail with a broadcast shape mismatch between the 5-layer ice arrays and the 2-element impurity arrays.
+
+```py
+# 5-layer model — only need to specify the overrides you care about.
+# Non-overridden impurity concentrations are automatically zero-padded to 5 layers.
+outputs = run_model(
+    dz=[0.02, 0.05, 0.05, 0.05, 0.83],
+    rds=[800, 900, 1000, 1100, 1200],
+    rho=[500, 600, 700, 750, 800],
+    impurity_1_conc=[40000, 10000, 0, 0, 0],  # snow algae in top 2 layers
+    # impurity_0_conc and impurity_2_conc are auto-resized to [0, 0, 0, 0, 0]
+)
+```
+
 ### Examples
 
 ```py
