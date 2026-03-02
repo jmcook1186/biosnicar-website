@@ -17,6 +17,17 @@ There are some restrictions on the parameter values and the set of available par
 You can also run the app locally. Simply download the `biosnicar` repository, install using `pip install -e .` and then run `./start_app.py`. The app will run at `localhost:8501`.
 
 
+## Important notice: repository history rewrite (March 2026)
+
+The git history of the `biosnicar-py` repository was rewritten to remove large binary files that had accumulated across past commits, reducing the download size from ~875 MB to ~170 MB. If you cloned the repository before this date your local history will no longer match the remote. To sync up, delete your local clone and re-clone:
+
+```sh
+rm -rf biosnicar-py
+git clone https://github.com/jmcook1186/biosnicar-py.git
+```
+
+No source code or data files were lost — only duplicate historical versions of large data files were removed. Existing forks will also need to be re-forked or have their history reset.
+
 ## Python code
 
 ### Installing Environment/Dependencies
