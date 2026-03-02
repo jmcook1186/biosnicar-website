@@ -33,6 +33,13 @@ Builds model objects from the input file, applies any keyword overrides to ice/i
 | `dz` | `ice.dz` | Broadcast to all layers if scalar, or pass a list |
 | `lwc` | `ice.lwc` | Broadcast to all layers if scalar |
 | `layer_type` | `ice.layer_type` | Broadcast to all layers if scalar |
+| `shp` | `ice.shp` | Grain shape; broadcast to all layers if scalar |
+| `grain_ar` | `ice.grain_ar` | Grain aspect ratio; broadcast to all layers if scalar |
+| `cdom` | `ice.cdom` | CDOM concentration; broadcast to all layers if scalar |
+| `water` | `ice.water` | Liquid water coating radius; broadcast to all layers if scalar |
+| `hex_side` | `ice.hex_side` | Hexagonal column side length; broadcast to all layers if scalar |
+| `hex_length` | `ice.hex_length` | Hexagonal column length; broadcast to all layers if scalar |
+| `shp_fctr` | `ice.shp_fctr` | Shape factor; broadcast to all layers if scalar |
 | `impurity_{i}_conc` | `impurities[i].conc` | Scalar: applied to first layer only (rest zeroed); list: applied directly |
 
 ### Layer count changes and automatic resizing
