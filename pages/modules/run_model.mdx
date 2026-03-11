@@ -63,6 +63,22 @@ outputs = run_model(
 )
 ```
 
+### Platform band convolution
+
+The `Outputs` object returned by `run_model()` has a `.to_platform()` method that maps the 480-band spectral albedo onto satellite or GCM band spaces. See the [bands module](/modules/bands) for full documentation.
+
+```py
+from biosnicar import run_model
+
+# Sentinel-2 bands
+s2 = run_model(solzen=50, rds=1000).to_platform("sentinel2")
+print(s2.B3, s2.NDSI)
+
+# CESM 2-band
+cesm = run_model(solzen=50).to_platform("cesm2band")
+print(cesm.vis, cesm.nir)
+```
+
 ### Examples
 
 ```py

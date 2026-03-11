@@ -16,8 +16,18 @@ This already happens in the downloaded version of `biosnicar` - you don't have t
 - `abs_nir_tot`: Spectrally-integrated VIS and NIR total column absorption in the near infrared wavelengths only
 - `absorbed_flux_per_layer`: energy absorbed in each vertical layer
 - `heat_rt`: Radiative heating rate in K/hr
+- `F_up`: Spectral upwelling flux at each layer interface, shape `(480, nbr_lyr+1)`
+- `F_dwn`: Spectral downwelling flux at each layer interface, shape `(480, nbr_lyr+1)`
 
-It is also possible to extend the scope of `Outputs` to include some more values that are currently treated as intermediates in the radiative transfer model. For example, upwards and downward fluxes in each layer (output from the `calculate_fluxes()` function in each solver but not propagated to `Outputs`).
+### Subsurface light field methods
+
+The `Outputs` object also provides convenience methods for working with the subsurface light field:
+
+- `subsurface_flux(depth_m)`: Spectral fluxes at any depth by linear interpolation between layer interfaces. Returns a dict with `F_up`, `F_dwn`, and `F_net`.
+- `par(depth_m)`: Photosynthetically Active Radiation (400-700 nm downwelling irradiance) at a given depth.
+- `spectral_heating_rate()`: Spectral radiative heating rate per layer in K/hr, shape `(480, nbr_lyr)`.
+
+See the [subsurface light fields guide](/user-guides/subsurface-light) for full details, worked examples, and discussion of radiation trapping effects.
 
 ## Using `run_model()` (recommended)
 
