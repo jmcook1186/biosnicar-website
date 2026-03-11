@@ -83,9 +83,9 @@ print(r.as_dict())   # {"B1": 0.82, "B2": 0.81, ..., "NDSI": 0.73, ...}
 
 Satellite bands use **spectral response function (SRF) convolution**. The band-averaged albedo for band $k$ is:
 
-$$\bar{\alpha}_k = \frac{\sum_i \alpha_i \cdot \text{SRF}_k(\lambda_i) \cdot F_i}{\sum_i \text{SRF}_k(\lambda_i) \cdot F_i}$$
+{String.raw`$$\bar{\alpha}_k = \frac{\sum_i \alpha_i \cdot \text{SRF}_k(\lambda_i) \cdot F_i}{\sum_i \text{SRF}_k(\lambda_i) \cdot F_i}$$`}
 
-where $\alpha_i$ is spectral albedo, $\text{SRF}_k(\lambda_i)$ is the spectral response, and $F_i$ is the solar flux at wavelength $i$.
+where $\alpha_i$ is spectral albedo, {String.raw`$\text{SRF}_k(\lambda_i)$`} is the spectral response, and $F_i$ is the solar flux at wavelength $i$.
 
 | Platform | Key | Bands | Indices | Source |
 |----------|-----|-------|---------|--------|
@@ -122,7 +122,7 @@ where $\alpha_i$ is spectral albedo, $\text{SRF}_k(\lambda_i)$ is the spectral r
 
 GCM bands use **flux-weighted interval averaging** over wavelength ranges:
 
-$$\bar{\alpha} = \frac{\sum_{i \in [lo, hi)} \alpha_i \cdot F_i}{\sum_{i \in [lo, hi)} F_i}$$
+{String.raw`$$\bar{\alpha} = \frac{\sum_{i \in [lo, hi)} \alpha_i \cdot F_i}{\sum_{i \in [lo, hi)} F_i}$$`}
 
 | Platform | Key | Bands | Description |
 |----------|-----|-------|-------------|
@@ -169,7 +169,7 @@ The system is designed to make SRF upgrades straightforward. The only thing you 
 
 2. **Resample the SRF onto the BioSNICAR 480-point wavelength grid** (0.205–4.995 µm, 10 nm step). Manufacturer SRFs are typically provided at 1 nm resolution, so this is a downsampling step. Use nearest-neighbour, linear interpolation, or band-average the 1 nm values within each 10 nm bin.
 
-3. **Replace the CSV** at `data/band_srfs/{sensor_name}.csv` with the resampled values. The file format is: first column `wavelength_um`, subsequent columns are band names (`B1`, `B2`, ...). Values should be normalised so the peak is approximately 1.0.
+3. **Replace the CSV** at `data/band_srfs/<sensor_name>.csv` with the resampled values. The file format is: first column `wavelength_um`, subsequent columns are band names (`B1`, `B2`, ...). Values should be normalised so the peak is approximately 1.0.
 
 4. **No code changes needed** — `load_srf()` reads the CSV at runtime and the convolution engine uses whatever SRF shape is in the file. If the CSV wavelength grid doesn't exactly match the model grid, values are linearly interpolated automatically.
 
