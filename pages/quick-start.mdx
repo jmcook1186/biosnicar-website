@@ -1,108 +1,128 @@
-## Get started with biosnicar
+# Quick Start
 
-Here you will find instructions for getting up and running with biosnicar, either via the web app or using the model code.
+Get BioSNICAR running in a few minutes. There are two ways to use it: the **web app** (no installation required) or the **Python package** (full control).
+
+---
 
 ## Web app
 
-`biosnicar` is available as a web application. Simply direct your browser to
+For a quick look at BioSNICAR without writing code, use the deployed Streamlit app:
 
-[https://bit.ly/bio-snicar](https://bit.ly/bio-snicar)
+**[bit.ly/bio-snicar](https://bit.ly/bio-snicar)**
 
-If you want to use `biosnicar` with a basic configuration, this is the simplest way. You can set your input configuration in the labelled fields on the left hand side of the screen and the plot in the centre of the screen will automatically update, providing the spectral albedo. You can also download the spectral albedo data as a csv file by clicking `Download Data`. 
+Set input parameters on the left panel and the spectral albedo plot updates automatically. You can download the data as CSV.
 
-![](/static/app.png)
+![BioSNICAR web application](/static/app.png)
 
-There are some restrictions on the parameter values and the set of available parameters in the web application. For example, the multilayer scheme is not available and only three different impurities are included. For complete control over the model configuration you can download and run the model yourself.
+The app covers the most common use cases but has some restrictions (no multi-layer, limited impurity types). For full control, use the Python package.
 
-You can also run the app locally. Simply download the `biosnicar` repository, install using `pip install -e .` and then run `./start_app.py`. The app will run at `localhost:8501`.
+---
 
+## Install the Python package
 
-## Important notice: repository history rewrite (March 2026)
+### Requirements
 
-The git history of the `biosnicar-py` repository was rewritten to remove large binary files that had accumulated across past commits, reducing the download size from ~875 MB to ~170 MB. If you cloned the repository before this date your local history will no longer match the remote. To sync up, delete your local clone and re-clone:
+- Python 3.8+
+- A fresh virtual environment is recommended
+
+### Installation
 
 ```sh
-rm -rf biosnicar-py
 git clone https://github.com/jmcook1186/biosnicar-py.git
-```
-
-No source code or data files were lost — only duplicate historical versions of large data files were removed. Existing forks will also need to be re-forked or have their history reset.
-
-## Python code
-
-### Installing Environment/Dependencies
-
-If you want to run `biosnicar` in a local Python environment but you do not have Python installed, download Python >3.7. 
-It is recommended to create a fresh environment using conda or venv specific to `biosnicar`. Once activated, install the project dependencies with:
-
-```sh
+cd biosnicar-py
 pip install -r requirements.txt
-```
-
-The previous command may take an unreasonable amount of time to complete with anaconda. If that is the case, you can simply open the `requirements.txt` file and pip install each dependency in the fresh environment. Then, install `biosnicar` using:
-
-```sh
 pip install -e .
 ```
 
-Finally, if you do not wish to install anything on your computer, but you use VSCode and Docker, then you can use the devcontainer config provided to run this code in a remote container. This requires the “remote containers” extension to be added to VSCode. Further instructions are available here: https://code.visualstudio.com/docs/remote/containers.
+> **Note:** If you cloned the repository before March 2026, you need to delete your local clone and re-clone — the git history was rewritten to reduce the download size from ~875 MB to ~170 MB. No source code or data was lost.
 
-### Running the model
+### Docker (alternative)
 
-The model driver (main.py) is in the root repository and all the core source code can be found in `/biosnicar`. From the top level directory (`~/biosnicar_py`), run:
+If you use VS Code and Docker, the repository includes a devcontainer config. Install the [Remote Containers](https://code.visualstudio.com/docs/remote/containers) extension and open the repo in a container.
 
-```sh
-python main.py
-```
+---
 
-This command will run the model with all the default settings from the config file `inputs.yaml` file.
-The user will see a list of output values printed to the console and a spectral albedo plot appear in a separate window.
-The code can also be run in an interactive session (Jupyter/iPython) in which case the relevant data and figure will appear in the interactive console, as well as in the command line outside of the top level directory, as long as the path to main.py is adjusted.
+## Your first simulation
 
-### Programmatic API — `run_model()`
+### One-line forward model
 
-For programmatic use, `run_model()` is the recommended single entry point. It accepts keyword overrides for any model parameter, runs the full pipeline, and returns an `Outputs` object:
+```python
+from biosnicar import run_model
 
-```py
-from biosnicar.drivers.run_model import run_model
-
-# Run with default inputs
 outputs = run_model()
-print(outputs.BBA)
-
-# Override specific parameters
-outputs = run_model(solzen=50, rds=1000, impurity_0_conc=500)
-print(outputs.albedo)  # 480-element spectral albedo
+print(f"Broadband albedo: {outputs.BBA:.4f}")
 ```
 
-Supported override keys: `solzen`, `direct`, `incoming`, `rds`, `rho`, `dz`, `lwc`, `layer_type`, and `impurity_{i}_conc`. `run_model()` is also accessible as `biosnicar.run_model()` after `import biosnicar`.
+This runs with all default settings (clean snow, solar zenith 50°) and returns an `Outputs` object with spectral and broadband albedo.
 
-### Changing input parameters
+### Override parameters
 
-Most users will want to experiment with changing input parameters.
-For batch configuration, adjust the values in the config file `inputs.yaml`.
-The nature of each parameter is described in in-line annotations to guide the user, and detailed in the [Inputs](inputs) page.
-Invalid combinations of values will be rejected by our error-checking code.
+Pass keyword arguments to change any input parameter:
 
-More complex applications of the model code, for example model inversions, field/model comparisons etc are presented in the [User guides](user-guides) menu.
+```python
+outputs = run_model(solzen=50, rds=1000, rho=600)
+print(f"BBA: {outputs.BBA:.4f}")
+```
 
-We have also maintained a separate version of the `biosnicar` codebase that uses a “functional” progamming style rather than the object-oriented approach taken here. 
-We refer to this as `biosnicar` Classic and it is available in the classic branch of this repository. It might be useful for people already familiar with FORTRAN or Matblab implementations from previous literature. 
-The two branches are entirely equivalent in their simulations but very different in their programming style. 
-The object oriented approach is preferred because it is more Pythonic, more flexible and easier to debug.
+### Add impurities
 
-### Choosing Inputs
+```python
+clean = run_model(solzen=50, rds=1000)
+dirty = run_model(solzen=50, rds=1000, black_carbon=5000, glacier_algae=50000)
 
-It is straightforward to adjust the model configuration by updating the values in `inputs.yaml`. However there is a lot of nuance to setting up the model to provide realistic simulations, and the meaning of the various parameters is not always obvious. 
-We will have a guide on this topic coming soon!
+print(f"Clean ice BBA:      {clean.BBA:.4f}")
+print(f"With impurities:    {dirty.BBA:.4f}")
+print(f"Albedo reduction:   {clean.BBA - dirty.BBA:.4f}")
+```
 
-Please note that you can have multiple input files, even saved in an external directory with specific configurations and then loop through them in `main.py`. 
-For example, you may wish to conduct an experiment with 10 different model configurations - in this case you could have ten `inputsX.yaml` files in an external directory. 
-Then execute all the functions inside the default `main.py` in a simple for loop, assigning each file to input_files in turn. 
-This is good for reproducibility as those config files can be archived.
+![How impurities reduce spectral albedo — clean vs black carbon vs algae](/static/fig02_impurity_effects.png)
 
-### Bio-optical model
+### Multi-layer ice column
 
-The bio-optical model (in the `biosnicar/biooptical/` module) is generally run separately to the main model code because most users use the default optical properties provided in the downloaded repository.
-However, some users may wish to generate new files. To do this, simply call `run_biooptical_model()` in `main.py` after updating the biooptical section of `inputs.yaml`.
-We expect the bio-optical model to be used rarely.
+```python
+outputs = run_model(
+    solzen=50,
+    layer_type=[1, 1, 1, 1, 1],
+    dz=[0.02, 0.05, 0.05, 0.05, 0.83],
+    rds=[800, 900, 1000, 1100, 1200],
+    rho=[500, 600, 700, 750, 800],
+    glacier_algae=[40000, 10000, 0, 0, 0],
+)
+print(f"5-layer BBA: {outputs.BBA:.4f}")
+```
+
+### Access spectral output
+
+```python
+import numpy as np
+
+outputs = run_model(solzen=50, rds=500)
+albedo = np.array(outputs.albedo)
+wavelengths = np.arange(0.205, 4.999, 0.01)
+
+print(f"Albedo at 0.5 um:  {albedo[29]:.4f}")
+print(f"Albedo at 1.0 um:  {albedo[79]:.4f}")
+print(f"Albedo at 1.5 um:  {albedo[129]:.4f}")
+```
+
+### Map to satellite bands
+
+Chain `.to_platform()` to convert 480-band output to satellite or climate model bands:
+
+```python
+s2 = run_model(solzen=50, rds=1000).to_platform("sentinel2")
+print(f"Sentinel-2 B3 (green): {s2.B3:.3f}")
+print(f"NDSI: {s2.NDSI:.3f}")
+
+cesm = run_model(solzen=50, rds=1000).to_platform("cesm2band")
+print(f"CESM VIS: {cesm.vis:.4f}, NIR: {cesm.nir:.4f}")
+```
+
+---
+
+## What's next?
+
+- **[Fundamentals](/fundamentals)** — understand how the model works and what each parameter means
+- **[Remote Sensing](/remote-sensing)** — use satellite band convolution and inverse retrieval
+- **[Fast Emulator](/emulator)** — speed up simulations 50,000x with the neural network surrogate
+- **[Examples](/examples)** — worked examples covering the full workflow

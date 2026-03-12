@@ -1,0 +1,128 @@
+# Fast Emulator
+
+BioSNICAR ships a pre-built neural-network emulator that reproduces the forward model at ~50,000x the speed (~1 µs vs ~50 ms per evaluation). It makes optimisation, MCMC, and real-time exploration practical — tasks that would take hours with the full radiative transfer solver finish in seconds.
+
+We've also made it as easy as possible to **build your own**. Want a smaller emulator targeting a narrow parameter range for a specific field campaign? A larger one covering extreme impurity concentrations? A snow-only variant with 3 free parameters? One call to `Emulator.build()` handles the sampling, training, and export.
+
+## Use the default emulator
+
+The repository includes an 8-parameter general-purpose emulator at `data/emulators/glacier_ice_8_param_default.npz`, trained on 50,000 Latin hypercube samples of solid glacier ice. It covers the most common use cases out of the box:
+
+```python
+from biosnicar.emulator import Emulator
+from biosnicar import run_emulator
+
+# Load the pre-built emulator
+emu = Emulator.load("data/emulators/glacier_ice_8_param_default.npz")
+
+# Predict spectral albedo (~1 µs)
+albedo = emu.predict(
+    rds=1000, rho=600, black_carbon=5000, snow_algae=0, dust=1000,
+    glacier_algae=50000, direct=1, solzen=50,
+)
+
+# Or get a full Outputs object (BBA, BBAVIS, BBANIR, .to_platform())
+outputs = run_emulator(
+    emu, rds=1000, rho=600, black_carbon=5000, snow_algae=0, dust=1000,
+    glacier_algae=50000, direct=1, solzen=50,
+)
+print(outputs.BBA)
+outputs.to_platform("sentinel2")
+```
+
+### Default parameter ranges
+
+| Parameter | Range | Units |
+|-----------|-------|-------|
+| `rds` | 500–10,000 | µm |
+| `rho` | 300–900 | kg/m³ |
+| `black_carbon` | 0–5,000 | ppb |
+| `snow_algae` | 0–500,000 | cells/mL |
+| `glacier_algae` | 0–500,000 | cells/mL |
+| `dust` | 0–50,000 | ppb |
+| `direct` | 0–1 | binary flag |
+| `solzen` | 25–80 | degrees |
+
+All 8 parameters must be provided when calling `predict()`. The emulator clips inputs to training bounds and warns if out of range.
+
+## Build your own
+
+The default emulator is general-purpose, but you can do better for a specific task. Building a custom emulator is a single function call:
+
+```python
+from biosnicar.emulator import Emulator
+
+# Focused emulator: 4 free parameters, narrow ranges, fixed illumination
+emu = Emulator.build(
+    params={
+        "rds": (100, 3000),
+        "rho": (300, 700),
+        "black_carbon": (0, 50000),
+        "glacier_algae": (0, 200000),
+    },
+    n_samples=5000,
+    layer_type=1,       # fixed: solid ice
+    solzen=50,          # fixed
+    direct=1,           # fixed
+)
+emu.save("my_field_campaign.npz")
+```
+
+Any `run_model()` keyword can be a free parameter (in `params`) or fixed (as a keyword argument). Fewer free parameters means fewer training samples needed and higher accuracy for the same build time.
+
+**Some ideas:**
+
+- **Snow-only emulator** — set `layer_type=0`, use snow-relevant `rds` range (50–2000 µm), fix impurities to zero
+- **High-impurity emulator** — extend `black_carbon` to 100,000 ppb for heavily polluted sites
+- **Fixed-illumination emulator** — lock `solzen` and `direct` for a specific scene, freeing up capacity for ice parameters
+- **Minimal 2-parameter emulator** — just SSA and one impurity, for fast field retrievals with everything else known
+
+### Build time
+
+| Samples | Time | Storage | Use case |
+|---------|------|---------|----------|
+| 5,000 | ~4 min | ~100 KB | 2–4 free parameters |
+| 10,000 | ~8 min | ~150 KB | 4–5 free parameters |
+| 15,000 | ~12 min | ~180 KB | 6+ free parameters |
+| 20,000 | ~17 min | ~200 KB | High-accuracy applications |
+
+Build time is dominated by forward model runs (~50 ms each). MLP training adds < 10 seconds.
+
+> **Requires** `scikit-learn>=1.0` at build time. Loading a pre-built emulator requires only NumPy.
+
+### Verify accuracy
+
+```python
+result = emu.verify(n_points=50)
+print(result.summary())
+```
+
+`verify()` runs the forward model on held-out parameter sets and compares against emulator predictions, reporting MAE, max error, R², and per-point diagnostics.
+
+## Why an emulator?
+
+The forward model takes ~50 ms per evaluation. Many important workflows require thousands to millions of evaluations:
+
+| Task | Evaluations | Forward model | Emulator |
+|------|-------------|--------------|----------|
+| Direct optimisation | 100–500 | 5–25 s | < 100 ms |
+| Global optimisation | 500–5,000 | 25 s – 4 min | < 1 s |
+| MCMC (32 walkers x 5000 steps) | 160,000 | ~2.2 hours | ~1 minute |
+
+The emulator is what makes the [inverse retrieval](/remote-sensing/inversions) module practical.
+
+## Accuracy
+
+![Emulator vs forward model spectral comparison](/static/emulator_accuracy.png)
+
+- **R²** > 0.999 with 5,000+ training samples
+- **MAE** < 0.005 albedo units
+- **Max broadband error** < 0.01
+
+## Architecture
+
+PCA compresses the 480-band output to ~10 principal components, and a small MLP (128-128-64 neurons, ReLU) predicts these coefficients. The result is a ~150 KB `.npz` file — no TensorFlow, no PyTorch, no GPU. Just three matrix multiplications and a ReLU.
+
+The `.npz` format is version-independent, safe to share (no pickle), and human-inspectable with `np.load()`.
+
+For full architecture details, see [Design Rationale](/emulator/design-rationale). For building custom emulators, see [Building Emulators](/emulator/building).

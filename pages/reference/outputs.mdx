@@ -1,0 +1,59 @@
+# Outputs Object
+
+The `Outputs` object is returned by `run_model()` and `run_emulator()`. It contains spectral albedo, broadband values, subsurface fluxes, and convenience methods.
+
+## Attributes
+
+| Attribute | Type | Description |
+|-----------|------|-------------|
+| `albedo` | list or ndarray (480,) | Spectral albedo |
+| `BBA` | float | Broadband albedo (flux-weighted) |
+| `BBAVIS` | float | Visible broadband albedo (0.3–0.7 µm) |
+| `BBANIR` | float | NIR broadband albedo (0.7–5.0 µm) |
+| `flx_slr` | ndarray (480,) | Solar flux spectrum |
+| `F_up` | ndarray (480, N+1) | Spectral upwelling flux at layer interfaces |
+| `F_dwn` | ndarray (480, N+1) | Spectral downwelling flux at layer interfaces |
+
+> `F_up` and `F_dwn` are only available from the full forward model, not the emulator.
+
+## Methods
+
+### .to_platform(platform)
+
+Convolve spectral albedo to satellite or climate model bands.
+
+```python
+s2 = outputs.to_platform("sentinel2")
+print(s2.B3, s2.NDSI)
+```
+
+Returns a [BandResult](/reference/bands-api).
+
+### .par(depth_m=0.0)
+
+Photosynthetically active radiation (400–700 nm) at a given depth.
+
+```python
+par_surface = outputs.par(0.0)
+par_profile = outputs.par([0.0, 0.05, 0.1, 0.5])
+```
+
+### .subsurface_flux(depth_m)
+
+Spectral fluxes at an arbitrary depth by linear interpolation.
+
+```python
+flux = outputs.subsurface_flux(0.03)
+print(flux["F_dwn"].shape)  # (480,)
+print(flux["F_up"].shape)   # (480,)
+print(flux["F_net"].shape)  # (480,)
+```
+
+### .spectral_heating_rate()
+
+Spectral radiative heating rate per layer (K/hr per band).
+
+```python
+heating = outputs.spectral_heating_rate()
+print(heating.shape)  # (480, N_layers)
+```

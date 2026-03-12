@@ -1,0 +1,121 @@
+# Forward Model Examples
+
+## Basic usage
+
+Run the model with default settings:
+
+```python
+from biosnicar import run_model
+import numpy as np
+
+outputs = run_model()
+print(f"Broadband albedo (BBA):  {outputs.BBA:.4f}")
+print(f"Visible BBA:             {outputs.BBAVIS:.4f}")
+print(f"NIR BBA:                 {outputs.BBANIR:.4f}")
+print(f"Spectral albedo shape:   {np.array(outputs.albedo).shape}")
+```
+
+## Override parameters
+
+```python
+outputs = run_model(solzen=50, rds=1000)
+print(f"BBA (solzen=50, rds=1000): {outputs.BBA:.4f}")
+```
+
+## Add impurities
+
+```python
+clean = run_model(solzen=50, rds=1000)
+dirty = run_model(solzen=50, rds=1000, black_carbon=5000, glacier_algae=50000)
+
+print(f"Clean ice BBA:      {clean.BBA:.4f}")
+print(f"With impurities:    {dirty.BBA:.4f}")
+print(f"Albedo reduction:   {clean.BBA - dirty.BBA:.4f}")
+```
+
+![How impurities reduce spectral albedo — clean vs black carbon vs algae](/static/impurity_effects.png)
+
+## Multi-layer ice column
+
+```python
+outputs = run_model(
+    solzen=50,
+    layer_type=[1, 1, 1, 1, 1],
+    dz=[0.02, 0.05, 0.05, 0.05, 0.83],
+    rds=[800, 900, 1000, 1100, 1200],
+    rho=[500, 600, 700, 750, 800],
+    glacier_algae=[40000, 10000, 0, 0, 0],
+)
+print(f"5-layer BBA: {outputs.BBA:.4f}")
+```
+
+## Access spectral output
+
+```python
+import numpy as np
+
+outputs = run_model(solzen=50, rds=500)
+albedo = np.array(outputs.albedo)
+wavelengths = np.arange(0.205, 4.999, 0.01)
+
+print(f"Albedo at 0.5 µm:  {albedo[29]:.4f}")
+print(f"Albedo at 1.0 µm:  {albedo[79]:.4f}")
+print(f"Albedo at 1.5 µm:  {albedo[129]:.4f}")
+print(f"Min albedo:         {albedo.min():.4f} at {wavelengths[albedo.argmin()]:.2f} µm")
+print(f"Max albedo:         {albedo.max():.4f} at {wavelengths[albedo.argmax()]:.2f} µm")
+```
+
+## Parameter sweeps
+
+```python
+from biosnicar.drivers.sweep import parameter_sweep
+
+df = parameter_sweep(
+    params={
+        "solzen": [30, 40, 50, 60, 70],
+        "rds": [100, 200, 500, 1000],
+    }
+)
+print(df[["solzen", "rds", "BBA"]])
+```
+
+With satellite bands:
+
+```python
+df = parameter_sweep(
+    params={"rds": [500, 1000], "solzen": [50, 60]},
+).to_platform("sentinel2")
+
+print(df[["rds", "solzen", "BBA", "B3", "NDSI"]])
+```
+
+## Subsurface light
+
+```python
+import numpy as np
+from biosnicar import run_model
+
+depths = np.linspace(0, 0.5, 20)
+
+clean = run_model(solzen=50, rds=500, dz=[0.01, 0.49])
+dirty = run_model(solzen=50, rds=500, dz=[0.01, 0.49], glacier_algae=50000)
+
+par_clean = clean.par(depths)
+par_dirty = dirty.par(depths)
+
+for d, pc, pd in zip(depths, par_clean, par_dirty):
+    print(f"  {d:.3f} m   clean={pc:.4f}  algae={pd:.4f}")
+```
+
+![PAR vs depth](/static/par_depth.png)
+
+Spectral heating rates:
+
+```python
+outputs = run_model(
+    dz=[0.1]*20, rds=2000, rho=700, layer_type=[1]*20,
+    solzen=50, glacier_algae=[50000] + [0]*19,
+)
+heating = outputs.spectral_heating_rate()
+print(f"Heating rate shape: {heating.shape}")  # (480, 20)
+```

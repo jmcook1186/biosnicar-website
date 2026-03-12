@@ -1,13 +1,83 @@
- # Welcome to biosnicar!
+# Welcome to BioSNICAR
 
-`biosnicar` is a free and open source software for simulating solar energy fluxes in snow and glacier ice with light absorbing impurities. It is a python translation of the widely used `SNICAR` model ([app](https://snow.engin.umich.edu/); [source](https://github.com/chloewhicker/SNICAR-ADv4)).
+BioSNICAR is an open-source Python framework for computing, emulating, and inverting spectral albedo of snow and glacier ice containing light-absorbing particles.
 
-`biosnicar` is available as a [Python package](https://github.com/jmcook1186/biosnicar-py) that you can easily download and run yourself, or as a [web application](https://bit.ly/bio-snicar) that can be run code-free in your browser.
 
-You can visit the [About](about) pages to learn about the theoretical background to `biosnicar` and we welcome [contributions](contributing) to the source code, the app or documentation! 
+```python
+from biosnicar import run_model
 
-To get up and running with `biosnicar`, follow the [Quick Start guide](quick-start).
+# Predict spectral albedo for dirty glacier ice
+outputs = run_model(solzen=50, rds=1000, glacier_algae=50000)
+print(outputs.BBA)  # broadband albedo
+```
 
-You can navigate through the documentation using the menu in the left sidebar. 
-See `Modules` to access reference documentation for every class and function in the `biosnicar` source code.
-See the `User guides` section to learn about key applications of `biosnicar`.
+![Spectral albedo curve](/static/hero_spectrum.png)
+
+---
+
+## Why BioSNICAR?
+
+Snow and ice surfaces reflect sunlight back to space — albedo is one of the most important controls on how fast ice melts. Light-absorbing particles (black carbon, mineral dust, algae) darken the surface and accelerate melt, but quantifying their effect requires solving the radiative transfer equations across 480 spectral bands.
+
+BioSNICAR does this, and more:
+
+- **Forward model** — predict spectral albedo for any combination of ice properties, impurities, and illumination. Two radiative transfer solvers, multi-layer support, five grain shapes, and a bio-optical module for algal pigments.
+
+- **50,000x faster emulator** — a neural network surrogate that reproduces the forward model in ~1 microsecond, making optimisation and MCMC practical. Just three matrix multiplications and a ReLU — no GPU, no PyTorch, no TensorFlow.
+
+- **Inverse retrieval** — estimate ice properties (specific surface area, impurity concentrations) from field spectrometer or satellite observations, with uncertainty quantification.
+
+- **Native satellite and climate model bands** — map 480-band output onto Sentinel-2, Sentinel-3, Landsat 8, MODIS, CESM, MAR, and HadCM3 with a single method call.
+
+- **Subsurface light field** — depth-resolved spectral fluxes, PAR at depth, and radiative heating rates from the adding-doubling solver.
+
+---
+
+## The integrated workflow
+
+Each capability is useful on its own - many people will find value in the forward model alone - but together, they enable a powerful workflow: take satellite spectra, retrieve SSA and impurity concentration with uncertainties, and predict the subsurface photic environment — all in under a second.
+
+![Four-step integrated workflow pipeline](/static/workflow.png)
+
+```python
+from biosnicar.emulator import Emulator
+from biosnicar.inverse import retrieve
+import numpy as np
+
+# Load emulator and retrieve ice properties from satellite bands
+emu = Emulator.load("data/emulators/glacier_ice_8_param_default.npz")
+
+result = retrieve(
+    observed=np.array([0.82, 0.78, 0.75, 0.45, 0.03]),
+    parameters=["ssa", "black_carbon", "glacier_algae"],
+    emulator=emu,
+    platform="sentinel2",
+    observed_band_names=["B2", "B3", "B4", "B8", "B11"],
+    fixed_params={"direct": 1, "solzen": 50, "dust": 1000, "snow_algae": 0},
+)
+print(result.summary())
+```
+
+---
+
+## Get started
+
+- **[Quick Start](/quick-start)** — install BioSNICAR and run your first simulation in 5 minutes
+- **[Fundamentals](/fundamentals)** — understand the model structure, inputs, and outputs
+- **[Remote Sensing](/remote-sensing)** — satellite band convolution and parameter retrieval from observations
+- **[Subsurface Light](/subsurface-light)** — PAR at depth and spectral heating rates
+- **[Fast Emulator](/emulator)** — build and use the neural network surrogate
+- **[API Reference](/api)** — complete reference for every function and class
+- **[Examples](/examples)** — worked code examples covering the full workflow
+
+---
+
+## Citation
+
+If you use BioSNICAR in a publication, please cite:
+
+Cook, J. et al. (2020): Glacier algae accelerate melt rates on the western Greenland Ice Sheet, The Cryosphere, doi:10.5194/tc-14-309-2020
+
+Flanner, M. et al. (2007): Present-day climate forcing and response from black carbon in snow, J. Geophys. Res., 112, D11202
+
+BioSNICAR is [open source on GitHub](https://github.com/jmcook1186/biosnicar-py) under the MIT licence. Contributions are welcomed — new issues and pull requests are the best way to get involved.

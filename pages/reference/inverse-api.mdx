@@ -1,0 +1,75 @@
+# Inverse Module API
+
+The `retrieve()` function estimates ice physical properties from observed albedo.
+
+```python
+from biosnicar.inverse import retrieve
+```
+
+## retrieve()
+
+```python
+retrieve(observed, parameters, emulator=None, forward_fn=None,
+         platform=None, observed_band_names=None, obs_uncertainty=None,
+         bounds=None, x0=None, regularization=None, wavelength_mask=None,
+         method="L-BFGS-B", mcmc_walkers=32, mcmc_steps=2000, mcmc_burn=500,
+         fixed_params=None, ssa_rho=None) -> RetrievalResult
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `observed` | ndarray | required | 480-band spectral albedo or N-band satellite array |
+| `parameters` | list[str] | required | Names of parameters to retrieve |
+| `emulator` | Emulator | None | Trained emulator (fast mode) |
+| `forward_fn` | callable | None | Direct forward function (slow mode) |
+| `platform` | str | None | Satellite platform key. Activates band mode. |
+| `observed_band_names` | list[str] | None | Band names matching `observed`. Required with `platform`. |
+| `obs_uncertainty` | ndarray | None | Per-element 1-sigma measurement uncertainty |
+| `bounds` | dict | None | `{name: (lo, hi)}` overriding defaults |
+| `x0` | dict | None | `{name: value}` initial guesses |
+| `regularization` | dict | None | `{name: (prior_mean, prior_sigma)}` Gaussian priors |
+| `wavelength_mask` | ndarray[bool] | None | True = include wavelength (spectral mode only) |
+| `method` | str | `"L-BFGS-B"` | Optimisation method |
+| `mcmc_walkers` | int | 32 | MCMC walkers |
+| `mcmc_steps` | int | 2000 | MCMC steps |
+| `mcmc_burn` | int | 500 | MCMC burn-in steps |
+| `fixed_params` | dict | None | Known parameters not to be optimised |
+| `ssa_rho` | float | None | Reference density for SSA decomposition |
+
+Either `emulator` or `forward_fn` must be provided.
+
+## RetrievalResult
+
+| Attribute | Type | Description |
+|-----------|------|-------------|
+| `best_fit` | dict | `{param_name: optimal_value}` |
+| `cost` | float | Final chi-squared value |
+| `uncertainty` | dict | `{param_name: 1_sigma}` |
+| `predicted_albedo` | ndarray (480,) | Spectrum at best-fit point |
+| `observed` | ndarray | Input observations |
+| `converged` | bool | Optimiser convergence flag |
+| `method` | str | Method used |
+| `n_function_evals` | int | Number of forward evaluations |
+| `derived` | dict | Internal decomposition (SSA mode: `rds_internal`, `rho_ref`) |
+| `chains` | ndarray or None | MCMC chains (steps, walkers, params) |
+
+`result.summary()` returns a human-readable string.
+
+## Default bounds
+
+| Parameter | Bounds | Default x0 | Units |
+|-----------|--------|-----------|-------|
+| `ssa` | (0.01, 300) | 2.0 | m²/kg |
+| `rds` | (100, 5000) | 1000 | µm |
+| `rho` | (100, 917) | 500 | kg/m³ |
+| `solzen` | (20, 80) | 50 | degrees |
+| `black_carbon` | (0, 100000) | 100 | ppb |
+| `snow_algae` | (0, 500000) | 10000 | cells/mL |
+| `glacier_algae` | (0, 100000) | 100 | cells/mL |
+| `dust` | (0, 500000) | 100 | ppb |
+
+## Constraints
+
+- `direct` cannot be in `parameters` — it's binary. Pass via `fixed_params`.
+- `ssa` cannot appear alongside `rds` or `rho` — SSA replaces both.
+- Impurity concentrations and SSA are optimised in log₁₀(x+1) space internally.

@@ -1,0 +1,170 @@
+# Inverse Retrieval
+
+The inverse module retrieves ice physical properties from observed albedo using emulator-powered optimisation. Given spectral or satellite-band observations, it estimates specific surface area (SSA), impurity concentrations, and optionally solar zenith angle, with uncertainty.
+
+## Quick start
+
+```python
+from biosnicar.emulator import Emulator
+from biosnicar.inverse import retrieve
+
+emu = Emulator.load("data/emulators/glacier_ice_8_param_default.npz")
+
+# Spectral retrieval (480-band observed albedo)
+result = retrieve(
+    observed=measured_albedo,
+    parameters=["ssa", "glacier_algae"],
+    emulator=emu,
+    fixed_params={"direct": 1, "solzen": 50, "rho": 700},
+)
+print(result.summary())
+print(f"SSA = {result.best_fit['ssa']:.2f} ± {result.uncertainty['ssa']:.2f} m²/kg")
+```
+
+![True vs retrieved spectrum](/static/inversion_result.png)
+
+## Why SSA?
+
+The spectral shape of ice albedo in the NIR is controlled by **specific surface area** (SSA), not by bubble radius (`rds`) or density (`rho`) individually. Many (rds, rho) combinations produce the same SSA and therefore nearly identical spectra. Retrieving them separately gives large errors:
+
+| Parameter | Individual error | SSA error |
+|-----------|-----------------|-----------|
+| rds | ~73% | — |
+| rho | ~33% | — |
+| **SSA** | — | **~5.5%** |
+
+Optimising directly in SSA space eliminates this degeneracy. The optimiser sees one well-constrained parameter instead of two degenerate ones.
+
+![SSA degeneracy: rds/rho valley vs SSA well](/static/ssa_degeneracy.png)
+
+## Observation modes
+
+### Spectral mode (default)
+
+Pass a 480-element array of spectral albedo (e.g. from a field spectrometer). This provides maximum information content and can constrain 4–5 parameters simultaneously.
+
+```python
+result = retrieve(
+    observed=measured_albedo,
+    parameters=["ssa", "black_carbon", "glacier_algae", "dust"],
+    emulator=emu,
+    fixed_params={"direct": 1, "solzen": 50, "snow_algae": 0},
+)
+```
+
+Use `wavelength_mask` to exclude noisy bands (e.g. water vapour absorption):
+
+```python
+import numpy as np
+mask = np.ones(480, dtype=bool)
+mask[117:122] = False  # exclude 1.38 µm water vapour
+mask[149:154] = False  # exclude 1.87 µm water vapour
+
+result = retrieve(observed=measured_albedo, ..., wavelength_mask=mask)
+```
+
+### Satellite band mode
+
+Set `platform` and `observed_band_names` to work in band space. The emulator predicts the full spectrum internally, convolves to the platform's bands, and compares:
+
+```python
+import numpy as np
+
+result = retrieve(
+    observed=np.array([0.82, 0.78, 0.75, 0.45, 0.03]),
+    parameters=["ssa", "black_carbon", "glacier_algae"],
+    emulator=emu,
+    platform="sentinel2",
+    observed_band_names=["B2", "B3", "B4", "B8", "B11"],
+    obs_uncertainty=np.array([0.02, 0.02, 0.02, 0.03, 0.05]),
+    fixed_params={"direct": 1, "solzen": 50, "dust": 1000, "snow_algae": 0},
+)
+```
+
+Supported platforms: `sentinel2`, `sentinel3`, `landsat8`, `modis`.
+
+> **Important:** Band mode provides less spectral information (4–5 values vs 480). Limit free parameters to 2–3 and fix well-constrained parameters via `fixed_params`.
+
+## Optimisation methods
+
+| Method | Use case | Typical time |
+|--------|----------|-------------|
+| `L-BFGS-B` (default) | Fast hybrid: DE pre-search + gradient polishing | ~0.5 s |
+| `Nelder-Mead` | Derivative-free, robust to noisy cost surfaces | ~1 s |
+| `differential_evolution` | Global search for strongly multimodal problems | ~3 s |
+| `mcmc` | Full Bayesian posterior distributions | ~30 s |
+
+The default L-BFGS-B method uses a two-phase strategy: a quick differential evolution pre-search finds the right basin of attraction, then gradient-based polishing converges to machine precision.
+
+```python
+# MCMC for publication-quality uncertainty
+result = retrieve(
+    observed=measured_albedo,
+    parameters=["ssa", "black_carbon", "glacier_algae"],
+    emulator=emu,
+    method="mcmc",
+    mcmc_walkers=32,
+    mcmc_steps=5000,
+    mcmc_burn=1000,
+    fixed_params={"direct": 1, "solzen": 50, "snow_algae": 0},
+)
+```
+
+## Uncertainty estimation
+
+### Hessian-based (default)
+
+Applied automatically after L-BFGS-B, Nelder-Mead, and differential evolution. Computes the finite-difference Hessian at the optimum and inverts to get the covariance matrix. This is fast (microseconds with the emulator) and accurate for well-constrained unimodal problems.
+
+A singular Hessian produces infinite uncertainty — correctly flagging unconstrained parameters.
+
+### MCMC posteriors
+
+With `method="mcmc"`, the full posterior distribution is sampled. This provides publication-quality uncertainty estimates, parameter correlations, and bimodal detection. Requires `emcee` (`pip install emcee>=3`).
+
+### Regularization
+
+Add prior information when available:
+
+```python
+result = retrieve(
+    ...,
+    regularization={"dust": (500, 200)},  # prior: 500 ± 200 ppb
+)
+```
+
+## Fixed parameters
+
+Use `fixed_params` to constrain known parameters and reduce the retrieval dimensionality:
+
+```python
+result = retrieve(
+    ...,
+    parameters=["ssa", "black_carbon", "glacier_algae"],
+    fixed_params={"direct": 1, "solzen": 53.2, "dust": 500, "snow_algae": 0},
+)
+```
+
+The `direct` parameter **must** be fixed — it's a binary flag that cannot be continuously optimised.
+
+## Retrievable parameters
+
+| Parameter | Physical meaning | Spectral sensitivity |
+|-----------|-----------------|---------------------|
+| `ssa` | Specific surface area | Very high (NIR) |
+| `rds` | Bubble effective radius | High (NIR) |
+| `rho` | Ice density | Moderate |
+| `solzen` | Solar zenith angle | Moderate |
+| `black_carbon` | Black carbon | High (VIS) |
+| `snow_algae` | Snow algae | High (VIS) |
+| `glacier_algae` | Glacier algae | High (VIS) |
+| `dust` | Mineral dust | Low (see note) |
+
+> **Dust caveat:** Mineral dust has a very flat spectral signature at typical environmental concentrations. Dust retrievals are unreliable unless concentrations are very high (> ~10,000 ppb). Consider fixing dust via `fixed_params`.
+
+## Known limitations
+
+- Only surface-layer impurity concentrations are retrieved
+- The default emulator assumes `layer_type=1` (solid ice) — build a custom emulator for snow
+- Satellite reflectances are assumed to be surface reflectance (no atmospheric correction)
+- `ssa` cannot appear alongside `rds` or `rho` in the same retrieval

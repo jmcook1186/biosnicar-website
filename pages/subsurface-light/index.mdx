@@ -1,0 +1,109 @@
+# Subsurface Light Field
+
+BioSNICAR's adding-doubling solver computes spectral upwelling and downwelling fluxes at every layer interface as part of its normal operation. These are exposed as first-class `Outputs` attributes, together with convenience methods for depth-interpolation, PAR estimation, and spectral heating rates.
+
+## Quick start
+
+```python
+from biosnicar import run_model
+
+outputs = run_model(solzen=60, rds=500, dz=[0.05, 0.5, 0.45])
+
+# Downwelling spectral flux at 3 cm depth
+flux = outputs.subsurface_flux(0.03)
+print(flux["F_dwn"].shape)   # (480,)
+
+# PAR (400-700 nm) at the surface
+print(outputs.par(0.0))
+
+# PAR at several depths
+print(outputs.par([0.0, 0.05, 0.1, 0.5]))
+```
+
+## Raw flux arrays
+
+After a call to `run_model()`, the `Outputs` object carries:
+
+| Attribute | Shape | Description |
+|-----------|-------|-------------|
+| `F_up` | `(480, N_layers+1)` | Spectral upwelling flux at each layer interface |
+| `F_dwn` | `(480, N_layers+1)` | Spectral downwelling flux at each layer interface |
+
+Interface indexing: column 0 is the surface (top of column), column N_layers is the bottom.
+
+Fluxes are normalised so that total incoming irradiance sums to 1 across all 480 bands. Multiply by actual irradiance for absolute W/m² values.
+
+## PAR at depth
+
+Photosynthetically Active Radiation (400–700 nm) is relevant for modelling the light environment of ice-associated algae.
+
+```python
+import numpy as np
+from biosnicar import run_model
+
+depths = np.linspace(0, 0.5, 20)
+
+clean = run_model(solzen=50, rds=500, dz=[0.01, 0.49])
+dirty = run_model(solzen=50, rds=500, dz=[0.01, 0.49], glacier_algae=50000)
+
+par_clean = clean.par(depths)
+par_dirty = dirty.par(depths)
+
+for d, pc, pd in zip(depths, par_clean, par_dirty):
+    print(f"  {d:.3f} m   clean={pc:.4f}  algae={pd:.4f}")
+```
+
+![PAR vs depth](/static/par_depth.png)
+
+### Flux enhancement near the surface
+
+In clean ice, PAR just below the surface can **exceed** the incident value. This is not a bug — it is a real physical effect called radiation trapping. In a highly scattering, weakly absorbing medium (ice in the visible has single-scattering albedo ~0.99998), backscattered light from deeper layers augments the downwelling stream, creating a flux enhancement in the uppermost few centimetres.
+
+This is the same physics that makes deep snow glow from within when you dig a snow pit.
+
+Impurities in the surface layer eliminate this enhancement by absorbing photons before they can penetrate and scatter back. The enhancement is strongest in the top ~1 transport mean-free-path and diminishes with depth as absorption gradually removes energy.
+
+## Spectral heating rates
+
+```python
+outputs = run_model(
+    dz=[0.1]*20, rds=2000, rho=700, layer_type=[1]*20,
+    solzen=50, glacier_algae=[50000] + [0]*19,
+)
+heating = outputs.spectral_heating_rate()
+print(heating.shape)  # (480, 20) — K/hr per band per layer
+```
+
+Heating rates show where and at which wavelengths radiative energy is deposited within the ice column:
+
+- **Visible wavelengths** — heating is concentrated where impurities absorb
+- **NIR wavelengths** — heating from ice absorption is distributed more evenly with depth
+
+NIR wavelengths typically dominate total radiative heating because ice absorption increases by orders of magnitude near 1.0, 1.25, and 1.5 µm. Visible photons scatter through the column without depositing much energy.
+
+## Subsurface flux interpolation
+
+`subsurface_flux()` returns spectral fluxes at an arbitrary depth by linear interpolation between layer interfaces:
+
+```python
+flux = outputs.subsurface_flux(0.05)
+print(flux["F_dwn"].shape)  # (480,)
+print(flux["F_up"].shape)   # (480,)
+print(flux["F_net"].shape)  # (480,)
+```
+
+For array depths:
+
+```python
+flux = outputs.subsurface_flux([0.01, 0.02, 0.05, 0.1])
+print(flux["F_dwn"].shape)  # (4, 480)
+```
+
+> **Tip:** For thick layers, the within-layer flux profile may be exponential rather than linear. Split thick layers into thinner sub-layers for more accurate interpolation.
+
+## Limitations
+
+- **Two-stream approximation** — provides hemispheric (planar) fluxes, not angular radiance distributions
+- **Normalised fluxes** — total incoming irradiance is normalised to 1; multiply by actual irradiance for absolute values
+- **Plane-parallel** — no lateral transport is modelled
+- **Adding-doubling solver only** — the Toon solver also populates flux arrays, but the adding-doubling solver provides the most physically complete subsurface field

@@ -1,15 +1,11 @@
 export default {
   index: "Welcome",
-  "quick-start": "Quick start",
+  "quick-start": "Quick Start",
   fundamentals: "Fundamentals",
-  modules: "Modules",
-  "user-guides": "User Guides",
-  about: {
-    title: "About",
-    type: "page"
-  },
-  contributing: {
-    title: "Contributing",
-    type: "page"
-  }
+  "remote-sensing": "Remote Sensing",
+  "subsurface-light": "Subsurface Light",
+  emulator: "Fast Emulator",
+  reference: "API Reference",
+  examples: "Examples",
+  faq: "FAQ",
 }

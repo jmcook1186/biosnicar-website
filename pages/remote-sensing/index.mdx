@@ -1,0 +1,36 @@
+# Remote Sensing
+
+BioSNICAR bridges the gap between high-resolution radiative transfer modelling and real-world observations. The model outputs 480 spectral bands, but satellites measure a handful of broadband values and field spectrometers measure continuous spectra. This section covers two capabilities that connect model output to observational data:
+
+- **[Band convolution](/remote-sensing/band-convolution)** — map 480-band spectral output onto satellite and climate model bands
+- **[Inverse retrieval](/remote-sensing/inversions)** — estimate ice properties from observed albedo
+
+Together, they enable a workflow that goes from satellite pixel to physical interpretation in under a second.
+
+## The integrated workflow
+
+```python
+from biosnicar.emulator import Emulator
+from biosnicar.inverse import retrieve
+import numpy as np
+
+# Load emulator
+emu = Emulator.load("data/emulators/glacier_ice_8_param_default.npz")
+
+# Sentinel-2 band values from a glacier pixel
+obs = np.array([0.82, 0.78, 0.75, 0.45, 0.03])
+bands = ["B2", "B3", "B4", "B8", "B11"]
+
+# Retrieve ice properties
+result = retrieve(
+    observed=obs,
+    parameters=["ssa", "black_carbon", "glacier_algae"],
+    emulator=emu,
+    platform="sentinel2",
+    observed_band_names=bands,
+    fixed_params={"direct": 1, "solzen": 50, "dust": 1000, "snow_algae": 0},
+)
+print(result.summary())
+```
+
+![Spectrum with satellite band regions highlighted](/static/platform_bands.png)

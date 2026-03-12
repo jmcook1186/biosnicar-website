@@ -1,0 +1,32 @@
+# API Reference
+
+Complete reference documentation for BioSNICAR's public API. The package is organised around a few key entry points:
+
+| Module | Primary function | Description |
+|--------|-----------------|-------------|
+| `biosnicar` | `run_model()` | Forward radiative transfer model |
+| `biosnicar.emulator` | `Emulator` class | Neural network surrogate model |
+| `biosnicar` | `run_emulator()` | Emulator wrapper returning Outputs |
+| `biosnicar.inverse` | `retrieve()` | Parameter retrieval from observations |
+| `biosnicar.bands` | `to_platform()` | Band convolution to satellite/GCM bands |
+| `biosnicar.drivers.sweep` | `parameter_sweep()` | Multi-parameter sensitivity analysis |
+
+## Package-level imports
+
+```python
+import biosnicar
+
+# These are all available at the package level:
+biosnicar.run_model(...)
+biosnicar.run_emulator(...)
+biosnicar.to_platform(...)
+```
+
+Or import directly:
+
+```python
+from biosnicar import run_model, run_emulator, to_platform
+from biosnicar.emulator import Emulator
+from biosnicar.inverse import retrieve
+from biosnicar.drivers.sweep import parameter_sweep
+```

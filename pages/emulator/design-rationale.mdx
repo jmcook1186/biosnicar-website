@@ -1,0 +1,48 @@
+# Design Rationale
+
+This page explains the key design decisions behind the BioSNICAR emulator architecture.
+
+## Why an emulator at all?
+
+The forward model takes ~50 ms per evaluation. At this speed:
+
+- An MCMC posterior exploration (160,000 evaluations) takes ~2.2 hours
+- A 5-dimensional parameter sweep at modest resolution takes days
+- Real-time interactive exploration is impossible
+
+The emulator reduces evaluation time to ~1 µs, making all of these practical.
+
+## Why MLP over alternatives?
+
+| Approach | Why not |
+|----------|---------|
+| **Gaussian Process** | O(n³) scaling. Impractical for 5000+ training points. Prediction ~ms (too slow for MCMC). |
+| **RBF interpolation** | Dense O(n²) memory, O(n³) solve. Stores all training points. |
+| **Polynomial regression** | Cannot capture nonlinear spectral features (absorption bands). |
+| **Random forest / XGBoost** | Step-function approximation. Not differentiable — breaks gradient-based optimisers. |
+
+The MLP wins on: O(N) scaling, microsecond inference, smooth differentiable output, compact storage (~100 KB), pure-numpy inference.
+
+## Why scikit-learn for training, numpy for inference?
+
+- **Build time** uses `sklearn.neural_network.MLPRegressor` — it handles backprop, Adam, early stopping, and train/validation splits correctly.
+- **Inference** extracts weights as numpy arrays. The forward pass is ~4 matrix multiplications. No sklearn import needed.
+
+Users who load a pre-built `.npz` file never need scikit-learn. Deployment environments stay lightweight.
+
+Why not PyTorch/TensorFlow? They're ~500 MB+ dependencies, overkill for a 3-layer MLP.
+
+## Why `.npz`, not pickle?
+
+- **Version-independent** — numpy arrays don't break across Python/sklearn versions
+- **No arbitrary code execution** — safe to share (unlike pickle)
+- **Human-inspectable** — can be loaded and examined with `np.load()`
+- **Compact** — compressed numpy arrays, ~100–200 KB
+
+## Why PCA + MLP?
+
+Albedo spectra produced by the forward model are low-dimensional. Although the output is a 480-element vector, the spectra lie on a manifold described by 8–15 principal components, because ice absorption and scattering vary smoothly with wavelength. The neural network therefore predicts ~10 PCA coefficients rather than 480 spectral values, which regularises the output and prevents unphysical spectral artefacts.
+
+## Why log-space sampling for impurities?
+
+Impurity concentrations span orders of magnitude (0 to 500,000). With linear sampling in this range, fewer than 0.2% of points fall below 1000 — and the emulator fails for clean ice. Log₁₀(x+1) sampling distributes points evenly across orders of magnitude, ensuring the emulator works well at both low and high concentrations.

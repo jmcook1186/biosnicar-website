@@ -1,0 +1,187 @@
+# Frequently Asked Questions
+
+---
+
+## Installation
+
+### I get "file not found" errors for refractive index data
+
+This usually means you cloned the repository before March 2026, when the git history was rewritten to reduce the download size. The internal data file paths changed during that migration.
+
+**Fix:** Delete your local clone and re-clone:
+
+```sh
+rm -rf biosnicar-py
+git clone https://github.com/jmcook1186/biosnicar-py.git
+cd biosnicar-py
+pip install -e .
+```
+
+### Which Python versions are supported?
+
+Python 3.8 and above. A fresh virtual environment is recommended to avoid dependency conflicts.
+
+---
+
+## Parameters and inputs
+
+### What does `direct` mean — should I use 0 or 1?
+
+`direct=1` means clear sky with a direct solar beam (sunny). `direct=0` means fully diffuse illumination (overcast). The spectral distribution of incident light changes between these two cases.
+
+Use `direct=1` for clear-sky satellite scenes and `direct=0` for cloudy conditions. When uncertain, `direct=1` is a reasonable default.
+
+### When I pass a scalar impurity concentration, where does it go?
+
+Scalar impurity values are applied to the **first (surface) layer only** and zero-padded to deeper layers:
+
+```python
+run_model(black_carbon=5000)
+# equivalent to black_carbon=[5000, 0] for a 2-layer model
+```
+
+To distribute impurities across layers, pass a list:
+
+```python
+run_model(glacier_algae=[40000, 10000, 0, 0, 0])
+```
+
+Scalar ice property parameters (like `rds`, `rho`) broadcast to **all** layers.
+
+### What happens when I change the number of layers?
+
+If your `dz` list has more elements than the default, all per-layer attributes are automatically resized:
+
+- **Ice properties** (`rds`, `rho`, `grain_ar`, etc.) are extended by repeating their last value
+- **Impurity concentrations** are zero-padded (only the surface layer gets the concentration)
+
+To control exactly what each layer gets, pass lists from the start:
+
+```python
+outputs = run_model(
+    dz=[0.02, 0.05, 0.05, 0.05, 0.83],
+    rds=[800, 900, 1000, 1100, 1200],
+    glacier_algae=[40000, 10000, 0, 0, 0],
+)
+```
+
+---
+
+## Solvers
+
+### Should I use adding-doubling or Toon?
+
+Use **adding-doubling** (the default). It is numerically exact for the two-stream equations and stable across the full parameter space.
+
+The Toon solver is faster but can produce unphysical values (albedo outside 0–1) at extreme parameter combinations — very large grain radii with high impurity loading at strong absorption bands.
+
+The pre-built emulator is trained on adding-doubling output, so use adding-doubling if you plan to compare against it.
+
+---
+
+## Inversions and retrieval
+
+### Why retrieve SSA instead of rds and rho separately?
+
+Spectral albedo in the near-infrared is controlled by **specific surface area (SSA)**, not by bubble radius or density individually. Many different (rds, rho) combinations produce the same SSA and therefore nearly identical spectra.
+
+When you try to retrieve rds and rho separately, the optimiser finds a continuous valley of equally good solutions — it can trade rds against rho without changing the cost. Typical retrieval errors:
+
+- rds alone: ~73%
+- rho alone: ~33%
+- **SSA: ~5.5%**
+
+Retrieve rds directly only when you have an independent density measurement that you can fix via `fixed_params`.
+
+### Why can't I retrieve the `direct` parameter?
+
+`direct` is binary (0 or 1) — the forward model treats it as a discrete switch. Continuous optimisation over a binary variable is meaningless. Pass it via `fixed_params` instead:
+
+```python
+result = retrieve(..., parameters=["ssa", "black_carbon"], fixed_params={"direct": 1})
+```
+
+### Why are my dust retrievals unreliable?
+
+The default mineral dust has a very flat, spectrally weak absorption signature at typical environmental concentrations. The cost surface is essentially insensitive to dust below ~5,000 ppb — the spectral difference between 100 and 5,000 ppb is smaller than typical measurement noise.
+
+**Best practice:** Fix dust at a reasonable background value (e.g., 1,000 ppb) via `fixed_params` when retrieving other parameters. Only retrieve dust if you expect concentrations above ~10,000 ppb.
+OR if you are using biosnicar in a geogrphic region where dust is more strongly absorbing (the default represents quartz-dominated dusts from Greenland Ice Sheet mid-ablation zone) then swap the dust optical property files for a more appropriate one.
+### My satellite band retrieval is much more uncertain than spectral retrieval — why?
+
+Satellite band mode (e.g., 5 Sentinel-2 bands) provides far less spectral information than the full 480-band spectrum. The cost surface is less constrained.
+
+Best practices for band-mode retrieval:
+- Limit free parameters to **2–3 maximum**
+- Fix everything else via `fixed_params` (especially `direct`, `solzen`, `dust`)
+- Provide `obs_uncertainty` so the optimiser weights bands appropriately
+
+### What wavelength regions should I mask in spectral retrievals?
+
+If your observations are affected by atmospheric absorption (e.g., space-borne or tower-based measurements), exclude the water vapour bands at ~1.38 µm and ~1.87 µm:
+
+```python
+mask = np.ones(480, dtype=bool)
+mask[117:122] = False  # 1.38 µm water vapour band
+mask[149:154] = False  # 1.87 µm water vapour band
+
+result = retrieve(observed=measured_albedo, ..., wavelength_mask=mask)
+```
+
+---
+
+## Emulator
+
+### How accurate is the emulator?
+
+The default pre-built emulator achieves R² > 0.999 and mean absolute error < 0.005 in broadband albedo on held-out test data.
+
+Use the emulator for inversions, MCMC, parameter sweeps, and interactive exploration. Use the forward model directly when validating results or working outside the emulator's training range.
+
+### What happens if my parameters are outside the emulator's training range?
+
+The emulator will extrapolate and produce unreliable (potentially nonsensical) results. Always check the training parameter ranges in the emulator metadata.
+
+The default emulator covers:
+
+| Parameter | Range |
+|-----------|-------|
+| `rds` | 500–10,000 µm |
+| `rho` | 300–900 kg/m³ |
+| `black_carbon` | 0–5,000 ppb |
+| `glacier_algae` | 0–500,000 cells/mL |
+| `dust` | 0–50,000 ppb |
+| `solzen` | 25–80° |
+
+If you need different ranges, [build a custom emulator](/emulator/building).
+
+---
+
+## Subsurface light
+
+### My PAR calculation shows values above 1.0 just below the surface — is this a bug?
+
+No. In clean ice (weakly absorbing, highly scattering), subsurface PAR can exceed the incident value in the uppermost few centimetres. Light penetrates, scatters back upward, and augments the downwelling stream — a radiation-trapping effect.
+
+This enhancement disappears when surface impurities are present, because they absorb photons before they can scatter back. The effect matters for modelling algal habitat: the light environment in clean ice is not simply "darker with depth".
+
+---
+
+## Miscellaneous
+
+### Which refractive index dataset does BioSNICAR use?
+
+The default is Warren (1984). BioSNICAR also supports Warren (2008) and Picard (2016). All agree to within ~1% at NIR wavelengths; Picard (2016) is more accurate in the visible. Change the dataset via the `OP_DIR_STUBS` setting in `inputs.yaml`.
+
+### How does `parameter_sweep()` combine multiple parameters?
+
+It computes the **Cartesian product** of all input ranges:
+
+```python
+df = parameter_sweep(
+    params={"solzen": [30, 40, 50], "rds": [500, 1000]}
+)
+# Returns 3 x 2 = 6 rows
+```
+
+This grows fast — 5 parameters with 5 values each = 3,125 runs. For large sweeps, consider using the emulator.
