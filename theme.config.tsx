@@ -8,7 +8,7 @@ const config: DocsThemeConfig = {
   },
   docsRepositoryBase: 'https://github.com/jmcook1186/biosnicar-website/tree/main',
   footer: {
-    content: 'Nextra Docs Template',
+    content: 'BioSNICAR — Open-source radiative transfer for snow and ice',
   }
 }
 

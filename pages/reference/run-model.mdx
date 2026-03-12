@@ -1,0 +1,68 @@
+# run_model()
+
+The main entry point for forward radiative transfer simulations.
+
+```python
+from biosnicar import run_model
+```
+
+## Signature
+
+```python
+run_model(input_file="default", **overrides) -> Outputs
+```
+
+## Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `input_file` | str | `"default"` | Path to YAML config file. `"default"` uses bundled `inputs.yaml`. |
+| `solzen` | int | 50 | Solar zenith angle (1–89 degrees) |
+| `direct` | int | 1 | Sky condition: 1 = clear, 0 = overcast |
+| `incoming` | int | 0 | Irradiance profile index (0–6) |
+| `rds` | int or list | 500 | Grain/bubble effective radius (µm) |
+| `rho` | int or list | 400 | Bulk ice density (kg/m³) |
+| `dz` | list[float] | [0.02, 0.146] | Layer thicknesses (m) |
+| `lwc` | float or list | 0.0 | Liquid water content |
+| `layer_type` | int or list | 0 | 0 = granular, 1 = solid ice + Fresnel |
+| `shp` | int or list | 0 | Grain shape (0–4) |
+| `grain_ar` | float or list | 1.0 | Grain aspect ratio |
+| `hex_side` | float or list | 50 | Hexagonal prism side length (µm) |
+| `hex_length` | float or list | 100 | Hexagonal prism length (µm) |
+| `black_carbon` | float or list | 0 | Black carbon concentration (ppb) |
+| `snow_algae` | float or list | 0 | Snow algae concentration (cells/mL) |
+| `glacier_algae` | float or list | 0 | Glacier algae concentration (cells/mL) |
+| `dust` | float or list | 0 | Mineral dust concentration (ppb) |
+
+### Override behaviour
+
+- Scalar ice parameters are broadcast to all layers
+- Scalar impurity concentrations are applied to the first layer only
+- List overrides that change the layer count trigger automatic resizing of all per-layer attributes
+
+## Returns
+
+An [Outputs](/reference/outputs) object.
+
+## Examples
+
+```python
+# Default configuration
+outputs = run_model()
+
+# Override parameters
+outputs = run_model(solzen=50, rds=1000, black_carbon=500)
+
+# Multi-layer
+outputs = run_model(
+    dz=[0.02, 0.05, 0.05, 0.05, 0.83],
+    rds=[800, 900, 1000, 1100, 1200],
+    glacier_algae=[40000, 10000, 0, 0, 0],
+)
+
+# Chain to satellite bands
+s2 = run_model(solzen=50, rds=1000).to_platform("sentinel2")
+
+# Custom input file
+outputs = run_model(input_file="path/to/config.yaml")
+```

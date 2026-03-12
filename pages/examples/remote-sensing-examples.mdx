@@ -1,0 +1,68 @@
+# Remote Sensing Examples
+
+## Map to satellite bands
+
+Chain `.to_platform()` onto any model run:
+
+```python
+from biosnicar import run_model
+
+s2 = run_model(solzen=50, rds=1000).to_platform("sentinel2")
+print(f"Sentinel-2 B3 (green): {s2.B3:.3f}")
+print(f"Sentinel-2 NDSI:       {s2.NDSI:.3f}")
+```
+
+## GCM bands
+
+```python
+cesm = run_model(solzen=50, rds=1000).to_platform("cesm2band")
+print(f"CESM VIS: {cesm.vis:.4f}, NIR: {cesm.nir:.4f}")
+
+mar = run_model(solzen=50, rds=1000).to_platform("mar")
+print(f"MAR sw1: {mar.sw1:.4f}, sw2: {mar.sw2:.4f}, sw3: {mar.sw3:.4f}, sw4: {mar.sw4:.4f}")
+```
+
+## Multi-platform comparison
+
+```python
+outputs = run_model(solzen=50, rds=1000)
+for plat in ["sentinel2", "landsat8", "modis", "cesm2band"]:
+    r = outputs.to_platform(plat)
+    print(f"{plat:12s}  bands: {len(r.band_names):2d}  indices: {r.index_names}")
+```
+
+![Spectrum with satellite band regions highlighted](/static/platform_bands.png)
+
+## Spectral index calibration
+
+Compute indices across a range of surface conditions:
+
+```python
+from biosnicar.drivers.sweep import parameter_sweep
+
+df = parameter_sweep(
+    params={"rds": [100, 250, 500, 1000, 2000]},
+).to_platform("sentinel2")
+
+print(df[["rds", "BBA", "B3", "NDSI"]])
+```
+
+## Multi-platform sweep
+
+```python
+df = parameter_sweep(
+    params={"rds": [500, 1000]},
+).to_platform("sentinel2", "landsat8", "modis")
+
+print(df[["rds", "sentinel2_NDSI", "landsat8_NDSI", "modis_NDSI"]])
+```
+
+## Forward modelling for retrieval validation
+
+Predict what a satellite would observe for a given ice configuration:
+
+```python
+s2 = run_model(solzen=50, rds=500, black_carbon=1000).to_platform("sentinel2")
+print(f"Sentinel-2 B3 (green): {s2.B3:.3f}")
+print(f"Sentinel-2 NDSI:       {s2.NDSI:.3f}")
+```

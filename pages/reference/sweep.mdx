@@ -1,0 +1,65 @@
+# Parameter Sweeps API
+
+Run the model over the Cartesian product of parameter values.
+
+```python
+from biosnicar.drivers.sweep import parameter_sweep
+```
+
+## parameter_sweep()
+
+```python
+parameter_sweep(params, solver="adding-doubling", return_spectral=False,
+                progress=True) -> SweepResult
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `params` | dict | required | `{name: [values]}` for each parameter |
+| `solver` | str | `"adding-doubling"` | `"adding-doubling"` or `"toon"` |
+| `return_spectral` | bool | False | Include 480-band spectral albedo |
+| `progress` | bool | True | Show tqdm progress bar |
+
+Supported parameter keys: `solzen`, `direct`, `incoming`, `rds`, `rho`, `dz`, `layer_type`, and impurity names (`black_carbon`, `snow_algae`, `glacier_algae`, `dust`).
+
+**Returns:** `SweepResult` (behaves like a pandas DataFrame).
+
+## SweepResult
+
+The result contains one row per parameter combination with columns for each input parameter plus output columns: `BBA`, `BBAVIS`, `BBANIR`.
+
+### .to_platform(*platforms)
+
+Append satellite/GCM band columns:
+
+```python
+df = parameter_sweep(params={...}).to_platform("sentinel2")
+df = parameter_sweep(params={...}).to_platform("sentinel2", "modis")
+```
+
+With a single platform, columns are unprefixed (`B3`, `NDSI`). With multiple platforms, columns are prefixed (`sentinel2_B3`, `modis_B1`).
+
+**Returns:** `pandas.DataFrame`
+
+## Example
+
+```python
+from biosnicar.drivers.sweep import parameter_sweep
+
+df = parameter_sweep(
+    params={
+        "solzen": [30, 40, 50, 60, 70],
+        "rds": [100, 200, 500, 1000],
+    }
+)
+
+# Pivot table
+df.pivot_table(values="BBA", index="solzen", columns="rds")
+
+# With satellite bands
+df = parameter_sweep(
+    params={"rds": [500, 1000], "solzen": [50, 60]},
+).to_platform("sentinel2")
+
+print(df[["rds", "solzen", "BBA", "B3", "NDSI"]])
+```

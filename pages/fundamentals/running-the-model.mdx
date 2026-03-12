@@ -1,0 +1,75 @@
+# Running the Model
+
+## The `run_model()` function
+
+`run_model()` is the single entry point for all forward model simulations. It accepts keyword overrides for any parameter, runs the full pipeline, and returns an `Outputs` object.
+
+```python
+from biosnicar import run_model
+
+# Default configuration
+outputs = run_model()
+print(outputs.BBA)
+
+# Override specific parameters
+outputs = run_model(solzen=50, rds=1000, black_carbon=500)
+print(outputs.albedo)  # 480-element spectral albedo
+```
+
+### Supported override keys
+
+`solzen`, `direct`, `incoming`, `rds`, `rho`, `dz`, `lwc`, `layer_type`, `shp`, `grain_ar`, `cdom`, `water`, `hex_side`, `hex_length`, `shp_fctr`, and impurity names (`black_carbon`, `snow_algae`, `glacier_algae`, `dust`).
+
+### Working with outputs
+
+```python
+import numpy as np
+
+outputs = run_model(solzen=50, rds=500)
+albedo = np.array(outputs.albedo)
+wavelengths = np.arange(0.205, 4.999, 0.01)
+
+print(f"Albedo at 0.5 µm:  {albedo[29]:.4f}")
+print(f"Albedo at 1.0 µm:  {albedo[79]:.4f}")
+print(f"Albedo at 1.5 µm:  {albedo[129]:.4f}")
+print(f"Broadband albedo:  {outputs.BBA:.4f}")
+print(f"Visible BBA:       {outputs.BBAVIS:.4f}")
+print(f"NIR BBA:           {outputs.BBANIR:.4f}")
+```
+
+### Chaining to satellite bands
+
+`run_model()` returns an `Outputs` object that supports `.to_platform()`:
+
+```python
+s2 = run_model(solzen=50, rds=1000).to_platform("sentinel2")
+print(s2.B3, s2.NDSI)
+```
+
+See [Remote Sensing](/remote-sensing) for details.
+
+## Running from the command line
+
+For a quick test, run from the repository root:
+
+```sh
+python main.py
+```
+
+This runs with all default settings and prints results to the console.
+
+## Custom input files
+
+For batch configuration or non-standard settings, edit `inputs.yaml` or point to a custom file:
+
+```python
+outputs = run_model(input_file="path/to/custom_inputs.yaml")
+```
+
+You can maintain multiple YAML files for different configurations and loop through them:
+
+```python
+for config in ["config_clean.yaml", "config_dusty.yaml", "config_algal.yaml"]:
+    outputs = run_model(input_file=config)
+    print(f"{config}: BBA = {outputs.BBA:.4f}")
+```

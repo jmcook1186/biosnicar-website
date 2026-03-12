@@ -1,0 +1,107 @@
+# Emulator API
+
+The `Emulator` class provides a neural-network surrogate for fast spectral albedo prediction.
+
+```python
+from biosnicar.emulator import Emulator
+from biosnicar import run_emulator
+```
+
+## Emulator.build()
+
+Train an emulator on Latin hypercube samples of the forward model.
+
+```python
+Emulator.build(params, n_samples=10000, solver="adding-doubling",
+               input_file="default", progress=True, seed=42,
+               **fixed_overrides) -> Emulator
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `params` | dict | required | `{name: (min, max)}` for each free parameter |
+| `n_samples` | int | 10000 | Number of LHS training samples |
+| `solver` | str | `"adding-doubling"` | RT solver |
+| `input_file` | str | `"default"` | YAML config path |
+| `progress` | bool | True | Show progress bar |
+| `seed` | int | 42 | Random seed |
+| `**fixed_overrides` | kwargs | — | Fixed parameters for every run |
+
+**Requires** `scikit-learn>=1.0`.
+
+## Emulator.predict()
+
+Predict 480-band spectral albedo. Pure numpy, ~microseconds.
+
+```python
+emu.predict(**params) -> np.ndarray  # shape (480,)
+```
+
+All emulator parameters must be provided as keyword arguments.
+
+## Emulator.predict_batch()
+
+Predict for N parameter combinations.
+
+```python
+emu.predict_batch(points) -> np.ndarray  # shape (N, 480)
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `points` | ndarray (N, n_params) | Rows are parameter sets in `param_names` order |
+
+## Emulator.verify()
+
+Measure accuracy against the full forward model.
+
+```python
+emu.verify(n_points=20, seed=123) -> VerificationResult
+```
+
+### VerificationResult
+
+| Attribute | Type | Description |
+|-----------|------|-------------|
+| `mae` | float | Mean absolute spectral error |
+| `max_err` | float | Worst-case absolute error |
+| `mae_bba` | float | Mean absolute broadband-albedo error |
+| `r2` | float | R² over all predicted vs reference values |
+| `n_points` | int | Number of benchmark points |
+
+`result.summary()` returns a human-readable string.
+
+## Emulator.save() / Emulator.load()
+
+```python
+emu.save("path.npz")
+emu = Emulator.load("path.npz")
+```
+
+No sklearn required for loading.
+
+## Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `param_names` | list[str] | Ordered parameter names |
+| `bounds` | dict | `{name: (min, max)}` from training |
+| `n_pca_components` | int | PCA components retained |
+| `training_score` | float | R² on training data |
+| `flx_slr` | ndarray (480,) | Solar flux spectrum |
+
+## run_emulator()
+
+Wrapper that returns an `Outputs` object with `.albedo`, `.BBA`, `.BBAVIS`, `.BBANIR`, `.flx_slr`, and `.to_platform()`.
+
+```python
+from biosnicar import run_emulator
+
+outputs = run_emulator(emu, rds=1000, rho=600, black_carbon=5000,
+                       snow_algae=0, dust=1000, glacier_algae=50000,
+                       direct=1, solzen=50)
+print(outputs.BBA)
+outputs.to_platform("sentinel2")
+```
+
+Fields only available from the full RT solver (`heat_rt`, `absorbed_flux_per_layer`) are `None`.

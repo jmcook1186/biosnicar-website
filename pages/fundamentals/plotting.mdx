@@ -1,0 +1,208 @@
+# Plotting
+
+BioSNICAR includes four built-in plotting functions that cover the most common visualisation needs. They are designed as convenience methods — quick ways to inspect results without writing boilerplate matplotlib code. For publication-quality or highly customised figures, you can work directly with the `Outputs` object and build your own plots.
+
+All built-in functions return `(fig, axes)` matplotlib objects, so you can always take the result and customise it further.
+
+## Spectral albedo
+
+Plot one or more spectral albedo curves, optionally with satellite band overlays.
+
+```python
+from biosnicar import run_model
+
+clean = run_model(rds=1000)
+dirty = run_model(rds=1000, glacier_algae=50000)
+
+# Single spectrum
+clean.plot(show=True)
+
+# Compare multiple runs
+clean.plot(dirty, labels=["Clean", "With algae"], show=True)
+
+# With satellite band overlay
+clean.plot(dirty, labels=["Clean", "With algae"], platform="sentinel2", show=True)
+
+# Save to file
+clean.plot(dirty, labels=["Clean", "With algae"], save="comparison.png")
+```
+
+Available as a standalone function too:
+
+```python
+from biosnicar.plotting import plot_albedo
+
+fig, ax = plot_albedo(clean, dirty, labels=["Clean", "With algae"],
+                      platform="sentinel2", xlim=(0.3, 2.5), title="My plot")
+```
+
+**Parameters:**
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `*outputs_list` | required | One or more `Outputs` objects |
+| `labels` | auto | Legend labels for each spectrum |
+| `platform` | `None` | Overlay satellite bands: `"sentinel2"`, `"landsat8"`, `"modis"` |
+| `xlim` | `(0.3, 2.5)` | Wavelength axis limits (µm) |
+| `title` | `None` | Plot title |
+| `colors` | tab10 | Line colours |
+
+## Subsurface PAR
+
+Plot photosynthetically active radiation (400–700 nm) attenuation with depth. Produces a two-panel figure: normalised PAR (relative to surface) and absolute PAR (W/m²).
+
+```python
+outputs = run_model(solzen=50, rds=500)
+outputs.plot_subsurface(show=True)
+outputs.plot_subsurface(irradiance=800, save="par_profile.pdf")
+```
+
+Standalone:
+
+```python
+from biosnicar.plotting import plot_subsurface
+
+fig, (ax_norm, ax_abs) = plot_subsurface(outputs, irradiance=1000)
+```
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `outputs` | required | Must have subsurface flux data (`F_up`, `F_dwn`) — requires the adding-doubling solver |
+| `irradiance` | `1000.0` | Total incoming solar irradiance (W/m²) for absolute PAR conversion |
+
+> The Toon solver does not store interface fluxes, so `plot_subsurface` only works with the adding-doubling solver (the default).
+
+## Inversion results
+
+Visualise the output of `retrieve()` with a two-panel figure: spectral/band fit and retrieved parameter values with uncertainties.
+
+```python
+from biosnicar.inverse import retrieve
+
+result = retrieve(observed=obs, parameters=["ssa", "black_carbon"], emulator=emu)
+
+# Basic plot
+result.plot(show=True)
+
+# With true values for validation
+result.plot(true_values={"ssa": 0.015, "black_carbon": 100}, save="retrieval.png")
+```
+
+Standalone:
+
+```python
+from biosnicar.plotting import plot_retrieval
+
+fig, (ax_spec, ax_params) = plot_retrieval(result, true_values={"ssa": 0.015})
+```
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `result` | required | `RetrievalResult` from `retrieve()` |
+| `true_values` | `None` | `{param: value}` dict — overlays true values as markers for validation |
+| `wvl_range` | `(0.35, 2.5)` | Wavelength range for spectral panel |
+
+The spectral panel auto-detects retrieval mode: full spectral curves for spectral-mode retrievals, side-by-side bars for band-mode retrievals.
+
+## Parameter sensitivity
+
+Auto-detect and plot parameter sensitivity from sweep results. The plot type is chosen automatically based on the number of swept parameters.
+
+```python
+from biosnicar.drivers.sweep import parameter_sweep
+
+df = parameter_sweep(params={
+    "rds": [200, 500, 1000, 2000],
+    "solzen": [30, 50, 70],
+})
+
+# Auto-detected multi-line plot
+df.plot_sensitivity(show=True)
+
+# Plot visible-band albedo instead of broadband
+df.plot_sensitivity(y="BBAVIS", save="vis_sensitivity.png")
+```
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `sweep_df` | required | `SweepResult` from `parameter_sweep()` |
+| `y` | `"BBA"` | Output to plot: `"BBA"`, `"BBAVIS"`, `"BBANIR"`, `"abs_slr_tot"` |
+
+**Auto-detection logic:**
+
+| Swept parameters | Plot type |
+|-----------------|-----------|
+| 1 | Line plot with markers |
+| 2 (both ≥ 4 values) | Heatmap |
+| 2 (otherwise) | Multi-line (one param as x-axis, other as colour) |
+| 3+ | Multi-line |
+
+## Common options
+
+All four plotting functions accept these keyword arguments:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `save` | `None` | Save to this path (format inferred from extension: `.png`, `.pdf`, `.svg`) |
+| `show` | `False` | Display in an interactive matplotlib window |
+| `dpi` | `300` | Resolution for saved figures |
+| `figsize` | varies | Figure dimensions in inches `(width, height)` |
+
+If neither `save` nor `show` is set, the figure stays open in memory and is returned for further use.
+
+## Custom plots from Outputs
+
+The built-in functions cover common cases, but you have full access to the underlying data for anything more advanced. Every `Outputs` object exposes the raw arrays:
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+from biosnicar import run_model
+
+outputs = run_model(solzen=50, rds=1000, glacier_algae=50000)
+
+wav = np.arange(0.205, 4.999, 0.01)  # 480-band wavelength grid
+
+# Spectral albedo
+albedo = np.array(outputs.albedo)       # shape (480,)
+
+# Broadband values
+print(outputs.BBA, outputs.BBAVIS, outputs.BBANIR)
+
+# Solar flux used for weighting
+flx = np.array(outputs.flx_slr)         # shape (480,)
+
+# Subsurface fluxes at layer interfaces
+F_up = np.array(outputs.F_up)           # shape (480, n_layers+1)
+F_dwn = np.array(outputs.F_dwn)         # shape (480, n_layers+1)
+
+# Absorbed flux per layer
+abs_per_layer = outputs.absorbed_flux_per_layer
+
+# Satellite bands
+s2 = outputs.to_platform("sentinel2")
+print(s2.B3, s2.NDSI)
+```
+
+With these arrays you can build any visualisation — multi-panel comparisons, difference plots, spectral ratios, wavelength-specific analysis, or integration with other datasets:
+
+```python
+# Example: plot albedo difference between two runs
+clean = run_model(rds=1000)
+dirty = run_model(rds=1000, black_carbon=5000)
+
+fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6), sharex=True)
+
+ax1.plot(wav, clean.albedo, label="Clean")
+ax1.plot(wav, dirty.albedo, label="+ BC")
+ax1.set_ylabel("Albedo")
+ax1.legend()
+
+ax2.plot(wav, np.array(clean.albedo) - np.array(dirty.albedo), color="red")
+ax2.set_ylabel("Albedo reduction")
+ax2.set_xlabel("Wavelength (µm)")
+ax2.axhline(0, color="k", linewidth=0.5)
+
+plt.tight_layout()
+plt.savefig("custom_difference_plot.png", dpi=150)
+```

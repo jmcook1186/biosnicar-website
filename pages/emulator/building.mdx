@@ -1,0 +1,136 @@
+# Building Custom Emulators
+
+The [default emulator](/emulator) covers a broad 8-parameter glacier ice configuration. Build a custom emulator when you want:
+
+- **Different parameter ranges** — narrower for higher accuracy, wider for extreme conditions
+- **Fewer free parameters** — fix known quantities (illumination, ice type) and let the emulator focus
+- **A different ice type** — snow (`layer_type=0`), granular ice, or a specific grain shape
+- **Maximum accuracy for a specific use case** — a focused emulator always outperforms a general one
+
+## Basic build
+
+```python
+from biosnicar.emulator import Emulator
+
+emu = Emulator.build(
+    params={
+        "rds": (100, 5000),
+        "rho": (100, 917),
+        "black_carbon": (0, 100000),
+        "glacier_algae": (0, 500000),
+    },
+    n_samples=5000,
+    layer_type=1,       # fixed: solid ice
+    solzen=50,          # fixed: solar zenith angle
+    direct=1,           # fixed: clear sky
+)
+emu.save("my_emulator.npz")
+```
+
+Any `run_model()` keyword can be used as a free parameter (in `params`) or fixed (as a keyword argument). Parameters not listed in either are set to their defaults.
+
+## Example configurations
+
+### Snow-only, 3 parameters
+
+```python
+emu = Emulator.build(
+    params={
+        "rds": (50, 2000),        # snow grain radius
+        "black_carbon": (0, 5000),
+        "dust": (0, 10000),
+    },
+    n_samples=3000,
+    layer_type=0,   # snow
+    solzen=50,
+    direct=1,
+)
+```
+
+### High-impurity glacier ice
+
+```python
+emu = Emulator.build(
+    params={
+        "rds": (500, 5000),
+        "rho": (400, 800),
+        "black_carbon": (0, 100000),    # extended range
+        "glacier_algae": (0, 1000000),  # extreme blooms
+    },
+    n_samples=10000,
+    solzen=50,
+    direct=1,
+)
+```
+
+### Full illumination sweep
+
+```python
+emu = Emulator.build(
+    params={
+        "rds": (500, 5000),
+        "rho": (300, 900),
+        "solzen": (20, 85),
+        "direct": (0, 1),
+    },
+    n_samples=8000,
+    # All impurities fixed at zero — clean ice illumination study
+    black_carbon=0, snow_algae=0, glacier_algae=0, dust=0,
+)
+```
+
+## Build time
+
+| Samples | Time | Storage | Suitable for |
+|---------|------|---------|--------------|
+| 3,000 | ~2.5 min | ~80 KB | 2–3 parameter emulators |
+| 5,000 | ~4 min | ~100 KB | 3–4 parameter emulators |
+| 10,000 | ~8 min | ~150 KB | 4–6 parameter emulators |
+| 20,000 | ~17 min | ~200 KB | High-accuracy, many parameters |
+
+Build time is dominated by forward model runs (~50 ms each). MLP training adds < 10 seconds.
+
+> **Requires** `scikit-learn>=1.0` at build time. Loading a pre-built emulator requires only NumPy.
+
+## Verify accuracy
+
+```python
+result = emu.verify(n_points=50)
+print(result.summary())
+```
+
+`verify()` runs the forward model on held-out parameter sets and compares against emulator predictions. The result includes MAE, max error, R², and per-point diagnostics.
+
+## Training details
+
+### Latin hypercube sampling
+
+LHS fills parameter space uniformly with far fewer samples than a Cartesian grid. Each parameter's marginal distribution is stratified into N equal bins with one sample per bin.
+
+Impurity parameters are sampled in log₁₀(x+1) space, ensuring adequate coverage of low concentrations. With linear sampling in [0, 500000], fewer than 0.2% of points fall below 1000 and the emulator fails for clean ice.
+
+### PCA compression
+
+Raw spectral output is 480 bands, but albedo spectra are low-dimensional — they lie on a manifold described by ~10 principal components. PCA regularises training, reduces network size (10 outputs instead of 480), and often improves accuracy by capturing dominant spectral modes.
+
+### Architecture: 128-128-64 ReLU
+
+Ice albedo is a smooth function of physical parameters. This modest network is the empirical sweet spot — deeper networks show marginal accuracy gain but triple storage and inference time, while shallower networks underfit spectral features near absorption bands.
+
+### Unphysical spectrum filtering
+
+The RT solver occasionally produces negative albedo at extreme parameter combinations. Spectra with any value outside [0, 1.01] are automatically excluded from training with a warning.
+
+## Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `param_names` | list[str] | Ordered parameter names |
+| `bounds` | dict | `{name: (min, max)}` from training |
+| `n_pca_components` | int | Number of PCA components retained |
+| `training_score` | float | R² on training data |
+| `flx_slr` | ndarray (480,) | Solar flux spectrum from build time |
+
+## `.npz` file format
+
+The emulator is stored as a compressed NumPy archive containing MLP weights, PCA basis vectors, input scaling bounds, solar flux, and JSON metadata. No pickle, no sklearn dependency for loading.

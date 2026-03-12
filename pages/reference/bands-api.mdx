@@ -1,0 +1,75 @@
+# Band Convolution API
+
+Map 480-band spectral output onto satellite and climate model bands.
+
+```python
+from biosnicar.bands import to_platform
+```
+
+## Outputs.to_platform()
+
+Chains onto `run_model()` or `run_emulator()`:
+
+```python
+s2 = run_model(solzen=50).to_platform("sentinel2")
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `platform` | str | Platform key |
+
+**Returns:** `BandResult`
+
+## SweepResult.to_platform()
+
+Chains onto `parameter_sweep()`:
+
+```python
+df = parameter_sweep(params={...}).to_platform("sentinel2")
+df = parameter_sweep(params={...}).to_platform("sentinel2", "modis")
+```
+
+With multiple platforms, columns are prefixed (`sentinel2_B3`, `modis_B1`).
+
+**Returns:** `pandas.DataFrame`
+
+## to_platform() (standalone)
+
+```python
+from biosnicar.bands import to_platform
+
+result = to_platform(albedo_array, "sentinel2", flx_slr=flux_array)
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `albedo` | ndarray (480,) | Spectral albedo |
+| `platform` | str | Platform key |
+| `flx_slr` | ndarray (480,) | Spectral solar flux |
+
+**Returns:** `BandResult`
+
+## BandResult
+
+| Attribute | Type | Description |
+|-----------|------|-------------|
+| `platform` | str | Platform key |
+| `band_names` | list[str] | Band attribute names |
+| `index_names` | list[str] | Index attribute names |
+
+Band and index values are accessible as named attributes: `result.B3`, `result.NDSI`.
+
+**Methods:** `as_dict()`, `repr()`.
+
+## Platform keys
+
+| Key | Platform | Bands | Indices |
+|-----|----------|------:|---------|
+| `sentinel2` | Sentinel-2 MSI | 13 | NDSI, NDVI, II |
+| `sentinel3` | Sentinel-3 OLCI | 21 | I2DBA, I3DBA, NDCI, MCI, NDVI |
+| `landsat8` | Landsat 8 OLI | 7 | NDSI, NDVI |
+| `modis` | MODIS | 7 + 3 broadband | NDSI |
+| `cesm2band` | CESM 2-band | 2 | — |
+| `cesmrrtmg` | CESM RRTMG | 14 | — |
+| `mar` | MAR | 4 | — |
+| `hadcm3` | HadCM3 | 6 | — |

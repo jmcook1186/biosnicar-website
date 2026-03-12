@@ -1,0 +1,124 @@
+# Band Convolution
+
+BioSNICAR outputs 480-band spectral albedo at 10 nm resolution. Satellites and climate models observe the surface through coarser spectral windows. The `.to_platform()` method maps the high-resolution spectrum onto platform-specific bands, enabling direct comparison between simulated and observed albedos.
+
+## Quick start
+
+`.to_platform()` chains directly onto `run_model()`:
+
+```python
+from biosnicar import run_model
+
+s2 = run_model(solzen=50, rds=1000).to_platform("sentinel2")
+print(s2.B3)     # green-band albedo
+print(s2.NDSI)   # Normalized Difference Snow Index
+
+cesm = run_model(solzen=50, rds=1000).to_platform("cesm2band")
+print(cesm.vis)  # VIS broadband albedo
+print(cesm.nir)  # NIR broadband albedo
+```
+
+## Supported platforms
+
+| Platform | Key | Bands | Method | Use case |
+|----------|-----|------:|--------|----------|
+| Sentinel-2 | `sentinel2` | 13 | SRF convolution | High-resolution ice mapping |
+| Sentinel-3 | `sentinel3` | 21 | SRF convolution | Ocean and land colour |
+| Landsat 8 | `landsat8` | 7 | SRF convolution | Long-term ice monitoring |
+| MODIS | `modis` | 7 + 3 broadband | Interval average | Global daily coverage |
+| CESM 2-band | `cesm2band` | 2 | Interval average | Earth system modelling |
+| CESM RRTMG | `cesmrrtmg` | 14 | Interval average | Detailed radiation schemes |
+| MAR | `mar` | 4 | Interval average | Regional climate modelling |
+| HadCM3 | `hadcm3` | 6 | Interval average | Palaeoclimate modelling |
+
+![Spectrum with satellite band regions highlighted](/static/platform_bands.png)
+
+## Spectral indices
+
+Spectral indices are computed automatically where platform bands permit:
+
+| Platform | Indices |
+|----------|---------|
+| Sentinel-2 | NDSI, NDVI, II (Impurity Index) |
+| Sentinel-3 | I2DBA, I3DBA, NDCI, MCI, NDVI |
+| Landsat 8 | NDSI, NDVI |
+| MODIS | NDSI |
+
+```python
+s2 = run_model(solzen=50, rds=1000, glacier_algae=50000).to_platform("sentinel2")
+print(f"NDSI: {s2.NDSI:.3f}")
+print(f"Impurity Index: {s2.II:.3f}")
+```
+
+## Multi-platform comparison
+
+A single `Outputs` object can be convolved onto multiple platforms:
+
+```python
+outputs = run_model(solzen=50, rds=1000)
+for plat in ["sentinel2", "landsat8", "modis", "cesm2band"]:
+    r = outputs.to_platform(plat)
+    print(f"{plat:12s}  bands: {len(r.band_names):2d}  indices: {r.index_names}")
+```
+
+## With parameter sweeps
+
+`.to_platform()` also works on sweep results, appending band columns to the DataFrame:
+
+```python
+from biosnicar.drivers.sweep import parameter_sweep
+
+df = parameter_sweep(
+    params={"rds": [500, 1000], "solzen": [50, 60]},
+).to_platform("sentinel2")
+
+print(df[["rds", "solzen", "BBA", "B3", "NDSI"]])
+```
+
+For multiple platforms, columns are prefixed:
+
+```python
+df = parameter_sweep(
+    params={"rds": [500, 1000]},
+).to_platform("sentinel2", "landsat8", "modis")
+
+print(df[["rds", "sentinel2_NDSI", "landsat8_NDSI", "modis_NDSI"]])
+```
+
+## GCM parameterisation
+
+Generate band albedos for climate model radiation schemes:
+
+```python
+cesm = run_model(solzen=60, rds=1000).to_platform("cesm2band")
+print(f"CESM VIS: {cesm.vis:.4f}, NIR: {cesm.nir:.4f}")
+
+mar = run_model(solzen=60, rds=1000).to_platform("mar")
+print(f"MAR sw1: {mar.sw1:.4f}, sw2: {mar.sw2:.4f}")
+```
+
+## Convolution methods
+
+Two methods are used depending on the platform:
+
+### SRF convolution (satellite platforms)
+
+Used by Sentinel-2, Sentinel-3, and Landsat 8. Each band has a Spectral Response Function (SRF) describing its wavelength sensitivity:
+
+```
+band_albedo = sum(albedo × SRF × flx_slr) / sum(SRF × flx_slr)
+```
+
+SRFs are stored as CSV files in `data/band_srfs/` and use tophat approximations by default. These can be replaced with official manufacturer SRFs for higher fidelity.
+
+### Flux-weighted interval averaging (GCMs and MODIS)
+
+Used by CESM, MAR, HadCM3, and MODIS. The band albedo is the flux-weighted mean over all model grid points within the wavelength interval:
+
+```
+band_albedo = sum(albedo[lo:hi] × flx_slr[lo:hi]) / sum(flx_slr[lo:hi])
+```
+
+## Adding new platforms
+
+New platforms can be added by providing a SRF CSV file in `data/band_srfs/` with 480 rows (one per model wavelength) and one column per band, without modifying the core code.

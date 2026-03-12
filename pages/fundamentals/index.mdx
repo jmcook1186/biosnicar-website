@@ -1,0 +1,90 @@
+# Fundamentals
+
+BioSNICAR solves the two-stream radiative transfer equations for a multi-layer ice column at 480 wavelengths (0.205–5.0 µm at 10 nm resolution). This section covers the core concepts you need to understand to use the model effectively.
+
+## How the model works
+
+Given a description of the ice column (grain/bubble size, density, layer thicknesses, impurity loadings) and illumination conditions (solar zenith angle, direct/diffuse sky), BioSNICAR computes the spectral albedo — the fraction of incoming sunlight reflected at each wavelength.
+
+The model pipeline is:
+
+1. **Configuration** — load ice, impurity, and illumination parameters
+2. **Optical properties** — compute single-scattering properties for each layer (extinction, single-scattering albedo, asymmetry parameter)
+3. **Impurity mixing** — mix impurity optical properties into each ice layer using volume-weighted averaging
+4. **Radiative transfer** — solve the two-stream equations to get spectral fluxes at every layer interface
+5. **Output** — spectral albedo, broadband albedo, subsurface fluxes
+
+All of this is wrapped in a single function call: `run_model()`.
+
+## Two radiative transfer solvers
+
+### Adding-doubling (recommended)
+
+The adding-doubling solver handles both granular snow and solid glacier ice with Fresnel surface reflection. It computes upwelling and downwelling spectral fluxes at every layer interface, providing the full subsurface light field. This is the default and most physically complete solver.
+
+- Use `layer_type=0` for granular snow (collections of grains)
+- Use `layer_type=1` for solid glacier ice (continuous medium with air bubbles and Fresnel surface reflection)
+
+### Toon solver
+
+The Toon tri-diagonal matrix solver (after Toon et al. 1989) is faster but less numerically stable at extreme parameter combinations. It supports granular snow (`layer_type=0`) but not Fresnel surface reflection.
+
+## Ice representations
+
+### Granular snow (`layer_type=0`)
+
+Snow is represented as a collection of ice grains. The grain effective radius (`rds`, in µm) controls the amount of scattering. Five grain shapes are available:
+
+| `shp` | Shape | Method |
+|-------|-------|--------|
+| 0 | Sphere | Mie theory |
+| 1 | Spheroid | Mie + aspherical correction |
+| 2 | Hexagonal plate | Mie + aspherical correction |
+| 3 | Koch snowflake | Mie + aspherical correction |
+| 4 | Hexagonal prism | Geometric optics |
+
+For non-spherical grains, the aspherical correction follows He et al. (2017, 2018).
+
+### Solid glacier ice (`layer_type=1`)
+
+Glacier ice is represented as a continuous medium with embedded air bubbles. The bubble effective radius (`rds`, in µm) and bulk ice density (`rho`, in kg/m³) together determine the specific surface area (SSA), which is the primary optical control:
+
+```
+SSA = 3 × (1 - rho/917) / (rds_m × rho)    [m² kg⁻¹]
+```
+
+The adding-doubling solver applies Fresnel reflection at the ice–air interface, which is important for bare glacier ice.
+
+## Light-absorbing particles
+
+BioSNICAR includes four built-in impurity types:
+
+| Name | YAML key | Unit | Spectral effect |
+|------|----------|------|-----------------|
+| Black carbon | `black_carbon` | ppb | Broadband darkening, strongest in visible |
+| Mineral dust | `dust` | ppb | Weak broadband visible darkening |
+| Snow algae | `snow_algae` | cells/mL | Visible darkening with pigment features |
+| Glacier algae | `glacier_algae` | cells/mL | Visible darkening with pigment features |
+
+Impurities are mixed into each layer using volume-weighted averaging of optical properties. Concentrations are specified per layer — scalar values are applied to the first (surface) layer only.
+
+![How different impurities affect the spectral albedo](/static/fig02_impurity_effects.png)
+
+## Key output fields
+
+The `Outputs` object returned by `run_model()` contains:
+
+| Field | Description |
+|-------|-------------|
+| `albedo` | 480-band spectral albedo |
+| `BBA` | Broadband albedo (flux-weighted) |
+| `BBAVIS` | Visible broadband albedo (0.3–0.7 µm) |
+| `BBANIR` | NIR broadband albedo (0.7–5.0 µm) |
+| `F_up` | Spectral upwelling flux at each layer interface |
+| `F_dwn` | Spectral downwelling flux at each layer interface |
+
+The `Outputs` object also supports `.to_platform()` for satellite band convolution and `.par()` / `.subsurface_flux()` for subsurface light diagnostics.
+
+---
+
+**Next:** [Input Parameters](/fundamentals/inputs) for a detailed guide to every configurable parameter.

@@ -1,0 +1,111 @@
+# End-to-End Workflow
+
+This example demonstrates the complete BioSNICAR pipeline: load an emulator, generate a synthetic satellite observation, retrieve ice properties, and validate the results.
+
+## Step 1: Load emulator
+
+```python
+from biosnicar.emulator import Emulator
+
+emu = Emulator.load("data/emulators/glacier_ice_8_param_default.npz")
+```
+
+## Step 2: Generate synthetic observation
+
+In a real workflow, the observation comes from a satellite image. Here we generate synthetic Sentinel-2 data from the full forward model:
+
+```python
+import numpy as np
+from biosnicar import run_model, to_platform
+from biosnicar.inverse.result import _compute_ssa
+
+# Known conditions (not retrieved)
+fixed = {"solzen": 50, "direct": 1, "dust": 1000, "snow_algae": 0}
+
+# "True" physical parameters (what we want to retrieve)
+true_params = {
+    "rds": 1200,
+    "rho": 700,
+    "black_carbon": 3000,
+    "glacier_algae": 80000,
+}
+true_ssa = _compute_ssa(true_params["rds"], true_params["rho"])
+
+# Run forward model and convolve to Sentinel-2
+true_outputs = run_model(**true_params, **fixed, layer_type=1)
+true_albedo = np.array(true_outputs.albedo, dtype=np.float64)
+s2_true = to_platform(true_albedo, "sentinel2", flx_slr=emu.flx_slr)
+
+# Select bands and add noise
+band_names = ["B2", "B3", "B4", "B8", "B11"]
+obs_values = np.array([getattr(s2_true, b) for b in band_names])
+
+rng = np.random.RandomState(42)
+noise_sigma = np.full(len(band_names), 0.005)
+obs_noisy = np.clip(obs_values + rng.normal(0, noise_sigma), 0, 1)
+
+print(f"True SSA: {true_ssa:.4f} m²/kg")
+print(f"S2 bands (noisy): {dict(zip(band_names, obs_noisy.round(4)))}")
+```
+
+## Step 3: Retrieve ice properties
+
+```python
+from biosnicar.inverse import retrieve
+
+result = retrieve(
+    observed=obs_noisy,
+    parameters=["ssa", "black_carbon", "glacier_algae"],
+    emulator=emu,
+    platform="sentinel2",
+    observed_band_names=band_names,
+    obs_uncertainty=noise_sigma,
+    fixed_params=fixed,
+)
+print(result.summary())
+```
+
+## Step 4: Validate against truth
+
+```python
+true_retrieval = {
+    "ssa": true_ssa,
+    "black_carbon": true_params["black_carbon"],
+    "glacier_algae": true_params["glacier_algae"],
+}
+
+print(f"{'Parameter':25s} {'True':>10s} {'Retrieved':>10s} {'Error':>10s}")
+print(f"{'-'*25} {'-'*10} {'-'*10} {'-'*10}")
+for name in result.best_fit:
+    true_val = true_retrieval[name]
+    ret_val = result.best_fit[name]
+    err = abs(ret_val - true_val)
+    print(f"{name:25s} {true_val:10.4f} {ret_val:10.4f} {err:10.4f}")
+```
+
+## Step 5: Use retrieved parameters downstream
+
+```python
+from biosnicar import run_emulator
+
+# Generate full spectrum from retrieved parameters
+emu_params = {
+    "rds": result.derived["rds_internal"],
+    "rho": result.derived["rho_ref"],
+    "black_carbon": result.best_fit["black_carbon"],
+    "glacier_algae": result.best_fit["glacier_algae"],
+}
+outputs = run_emulator(emu, **emu_params, **fixed)
+
+print(f"BBA (retrieved): {outputs.BBA:.4f}")
+
+# Convolve to other platforms
+s2_ret = outputs.to_platform("sentinel2")
+cesm_ret = outputs.to_platform("cesm2band")
+print(f"S2 NDSI: {s2_ret.NDSI:.4f}")
+print(f"CESM VIS: {cesm_ret.vis:.4f}, NIR: {cesm_ret.nir:.4f}")
+```
+
+![Four-step workflow pipeline](/static/workflow.png)
+
+This workflow — from satellite pixel to retrieved physical properties to downstream analysis — runs in under a second with the emulator, making it practical for per-pixel processing of satellite imagery.
