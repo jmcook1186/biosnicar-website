@@ -112,19 +112,81 @@ result = retrieve(
 
 ## Uncertainty estimation
 
+Both methods below report 1-sigma uncertainties in `result.uncertainty`, accessible as:
+
+```python
+print(f"SSA = {result.best_fit['ssa']:.2f} ± {result.uncertainty['ssa']:.2f} m²/kg")
+```
+
 ### Hessian-based (default)
 
-Applied automatically after L-BFGS-B, Nelder-Mead, and differential evolution. Computes the finite-difference Hessian at the optimum and inverts to get the covariance matrix. This is fast (microseconds with the emulator) and accurate for well-constrained unimodal problems.
+Applied automatically after L-BFGS-B, Nelder-Mead, and differential evolution. This is the **Laplace approximation**: the cost surface is assumed locally quadratic near the optimum, and the curvature of that quadratic (the Hessian matrix) encodes how tightly each parameter is constrained.
 
-A singular Hessian produces infinite uncertainty — correctly flagging unconstrained parameters.
+Concretely, BioSNICAR:
+
+1. Evaluates the cost function at small perturbations around the best fit using a 4-point central-difference stencil
+2. Assembles the Hessian matrix **H** (second derivatives of the cost with respect to each parameter pair)
+3. Inverts to get the approximate posterior covariance: **C** = **H**⁻¹
+4. Reports 1-sigma uncertainties as the square roots of the diagonal: σₖ = √|Cₖₖ|
+
+This is the same mathematical framework as the **optimal estimation** approach widely used in atmospheric and cryospheric remote sensing (Rodgers, 2000; Bohn et al., 2021). It is computationally cheap — ~4n² additional emulator evaluations, negligible at microsecond speeds — and accurate when the cost surface is unimodal and approximately Gaussian near the minimum.
+
+A **singular Hessian** (flat cost surface in some direction) produces infinite uncertainty, correctly flagging parameters that the observations cannot constrain.
+
+**When to trust it:** For well-posed retrievals (2–4 parameters, good spectral coverage, moderate noise). The Hessian approximation tends to slightly underestimate uncertainty when the posterior is non-Gaussian (e.g., skewed or multimodal), but for most practical BioSNICAR retrievals the approximation is reliable.
 
 ### MCMC posteriors
 
-With `method="mcmc"`, the full posterior distribution is sampled. This provides publication-quality uncertainty estimates, parameter correlations, and bimodal detection. Requires `emcee` (`pip install emcee>=3`).
+With `method="mcmc"`, the full posterior distribution is explored using the affine-invariant ensemble sampler from `emcee` (Foreman-Mackey et al., 2013). Rather than assuming a shape for the posterior, MCMC draws samples from it directly.
+
+BioSNICAR:
+
+1. Initialises an ensemble of walkers (default 32) in a tight Gaussian ball around the best-fit estimate
+2. Each walker proposes moves accepted or rejected based on the log-probability (uniform prior within bounds, chi-squared likelihood)
+3. After a burn-in period (default 500 steps), the remaining chain (default 2000 steps) samples the posterior
+4. Reports the **posterior median** as the point estimate and the **posterior standard deviation** as the 1-sigma uncertainty
+
+```python
+result = retrieve(
+    observed=measured_albedo,
+    parameters=["ssa", "black_carbon", "glacier_algae"],
+    emulator=emu,
+    method="mcmc",
+    mcmc_walkers=32,
+    mcmc_steps=5000,
+    mcmc_burn=1000,
+    fixed_params={"direct": 1, "solzen": 50, "snow_algae": 0},
+)
+
+# Full chains are available for downstream analysis (corner plots, convergence checks)
+chains = result.chains  # shape: (n_steps, n_walkers, n_params)
+print(f"Acceptance fraction: {result.acceptance_fraction:.2f}")  # target ~0.2-0.5
+```
+
+MCMC is slower (~30–60 s for a typical retrieval) but captures **non-Gaussian posteriors, parameter correlations, and multimodality** that the Hessian approximation misses. This matters for:
+
+- Weakly constrained parameters (e.g. dust at low concentrations)
+- Band-mode retrievals with few observations
+- Publication-quality uncertainty reporting
+
+MCMC-based inversion of radiative transfer models for snow and ice has been validated in the literature (Robledano et al., 2023; Dillon et al., 2025).
+
+> Requires `emcee>=3` (`pip install emcee`).
+
+### Which should I use?
+
+| | Hessian (default) | MCMC |
+|---|---|---|
+| **Speed** | < 1 s | 30–60 s |
+| **Assumptions** | Gaussian posterior (quadratic cost surface) | None — samples the true posterior |
+| **Best for** | Routine retrievals, well-constrained problems | Publication uncertainty, weakly constrained problems |
+| **Output** | Point estimate + symmetric error bars | Full posterior distribution + chains |
+
+For most users, the default Hessian uncertainty is sufficient. Switch to MCMC when you need to report uncertainties in a publication, when you suspect the posterior is non-Gaussian, or when you want to examine parameter correlations.
 
 ### Regularization
 
-Add prior information when available:
+Add prior information when parameters are weakly constrained by the observations. This adds a Gaussian penalty term to the cost function, pulling the retrieval towards the prior:
 
 ```python
 result = retrieve(
@@ -132,6 +194,15 @@ result = retrieve(
     regularization={"dust": (500, 200)},  # prior: 500 ± 200 ppb
 )
 ```
+
+### References
+
+- Rodgers, C. D. (2000). *Inverse Methods for Atmospheric Sounding: Theory and Practice.* World Scientific Publishing.
+- Tarantola, A. (2005). *Inverse Problem Theory and Methods for Model Parameter Estimation.* SIAM.
+- Bohn, N. et al. (2021). Optimal estimation of snow and ice surface parameters from imaging spectroscopy measurements. *Remote Sensing of Environment*, 264, 112613.
+- Foreman-Mackey, D. et al. (2013). emcee: The MCMC Hammer. *Publications of the Astronomical Society of the Pacific*, 125(925), 306–312.
+- Robledano, A. et al. (2023). Unraveling the optical shape of snow. *Nature Communications*, 14, 3955.
+- Dillon, K. M. et al. (2025). Evaluating sensitivity of optical snow grain size retrievals to radiative transfer models, shape parameters, and inversion techniques. *The Cryosphere*, 19, 2913–2935.
 
 ## Fixed parameters
 

@@ -116,6 +116,33 @@ Best practices for band-mode retrieval:
 - Fix everything else via `fixed_params` (especially `direct`, `solzen`, `dust`)
 - Provide `obs_uncertainty` so the optimiser weights bands appropriately
 
+### How does the Hessian uncertainty work? Can I trust it?
+
+The default uncertainty method uses the **Laplace approximation**: it assumes the cost surface is locally quadratic (bowl-shaped) around the best fit, computes the curvature (Hessian matrix) via finite differences, and inverts it to get an approximate posterior covariance matrix. The 1-sigma uncertainty for each parameter is the square root of the corresponding diagonal element.
+
+This is the same **optimal estimation** framework used throughout atmospheric and cryospheric remote sensing (Rodgers, 2000; Bohn et al., 2021). It is fast (< 1 second) and reliable when:
+
+- The retrieval is well-posed (2–4 free parameters, good spectral coverage)
+- The cost surface is unimodal near the minimum
+- The posterior is approximately Gaussian (symmetric error bars make sense)
+
+It can **underestimate** uncertainty when the posterior is skewed, multimodal, or has strong parameter correlations. If the Hessian is singular (some direction is completely unconstrained), the uncertainty is reported as infinity — this is correct behaviour, not a bug.
+
+For routine work, the Hessian uncertainty is sufficient. For publication-quality reporting or weakly constrained problems, use MCMC.
+
+### When should I use MCMC instead of the default uncertainty?
+
+MCMC (`method="mcmc"`) explores the full posterior distribution by drawing samples, making no assumptions about its shape. Use it when:
+
+- You need **publication-quality uncertainty** — reviewers may expect posterior distributions rather than Gaussian error bars
+- The posterior might be **non-Gaussian** — e.g., skewed impurity distributions near zero, or multimodal solutions
+- You want to examine **parameter correlations** — the full chains let you build corner plots showing how parameters trade off
+- You're working with **band-mode retrievals** where few observations weakly constrain multiple parameters
+
+MCMC takes ~30–60 seconds (vs < 1 second for Hessian) because it requires ~100,000+ emulator evaluations. This is only practical because the emulator runs at ~1 µs per call. The result includes full chains, acceptance fraction, and autocorrelation time for convergence diagnostics.
+
+BioSNICAR uses the `emcee` affine-invariant ensemble sampler (Foreman-Mackey et al., 2013), which handles moderate correlations well without manual tuning.
+
 ### What wavelength regions should I mask in spectral retrievals?
 
 If your observations are affected by atmospheric absorption (e.g., space-borne or tower-based measurements), exclude the water vapour bands at ~1.38 µm and ~1.87 µm:
